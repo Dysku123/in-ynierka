@@ -4,6 +4,7 @@ use App\Http\Controllers\CartController;
 use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\HomeController;
+use App\Http\Controllers\OrderController;
 
 Route::get('/', [HomeController::class, 'index'])->name('home');
 
@@ -13,6 +14,7 @@ Route::get('/produkt/{slug}', [HomeController::class, 'product'])->name('product
 Route::post('/koszyk/dodaj', [CartController::class, 'add'])->name('cart.add');
 Route::get('/koszyk', [CartController::class, 'index'])->name('cart.show');
 Route::delete('/koszyk/{id}', [CartController::class, 'destroy'])->name('cart.destroy');
+Route::post('/zamowienie', [OrderController::class, 'store'])->name('order.store');
 
 //Trasy chronione dla zalogowanych (Profil)
 Route::middleware('auth')->group(function () {
