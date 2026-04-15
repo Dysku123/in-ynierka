@@ -14,13 +14,15 @@ Route::get('/produkt/{slug}', [HomeController::class, 'product'])->name('product
 Route::post('/koszyk/dodaj', [CartController::class, 'add'])->name('cart.add');
 Route::get('/koszyk', [CartController::class, 'index'])->name('cart.show');
 Route::delete('/koszyk/{id}', [CartController::class, 'destroy'])->name('cart.destroy');
-Route::post('/zamowienie', [OrderController::class, 'store'])->name('order.store');
+Route::post('/zamowienie/stworz', [OrderController::class, 'store'])->name('order.store');
+
 
 //Trasy chronione dla zalogowanych (Profil)
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+    Route::get('/zamowienia', [OrderController::class, 'index'])->name('orders.index');
 
     // Dashboard (Breeze go tu zostawił)
     Route::get('/dashboard', function () {
