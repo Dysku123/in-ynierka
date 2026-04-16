@@ -15,6 +15,7 @@ Route::post('/koszyk/dodaj', [CartController::class, 'add'])->name('cart.add');
 Route::get('/koszyk', [CartController::class, 'index'])->name('cart.show');
 Route::delete('/koszyk/{id}', [CartController::class, 'destroy'])->name('cart.destroy');
 Route::post('/zamowienie/stworz', [OrderController::class, 'store'])->name('order.store');
+Route::get('/zamowienie/status/{uuid}',[OrderController::class, 'showForGuest'])->name('order.guest_show');
 
 
 //Trasy chronione dla zalogowanych (Profil)

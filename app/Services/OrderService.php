@@ -7,7 +7,9 @@ use App\Models\CartItem;
 use App\Models\OrderItem;
 use App\Services\CartService;
 use Illuminate\Support\Facades\DB;
+use App\Enums\OrderStatus;
 use Exception;
+use Illuminate\Support\Str;
 
 class OrderService
 {
@@ -26,7 +28,8 @@ class OrderService
                 'user_id' => $userId,
                 'email' => $email,
                 'total_price' => $totalPrice,
-                'status' => 'pending'
+                'status' => OrderStatus::Pending->value,
+                'uuid' => is_null($userId) ? Str::uuid()->toString() : null
             ]);
 
             $orderItemsData = [];
@@ -51,13 +54,28 @@ class OrderService
             OrderItem::insert($orderItemsData);
             CartItem::whereIn('id', $cartItemIds)->delete();
 
+            \App\Events\OrderCreated::dispatch($order);// to triggeruje event wysylki potwierdzenia
+
             return $order;
         });
-
     }
 
     public function getUserOrders(int $userId)
     {
         return Order::where('user_id', $userId)->with('items')->latest()->get();
+    }
+
+    public function changeStatus(int $orderId, OrderStatus $newStatus)
+    {
+
+        $order = Order::findOrFail($orderId);
+        $order->status = $newStatus->value;
+        $order->save();
+        return $order;
+    }
+
+    public function getOrderByUuid(string $uuid)
+    {
+        return Order::where('uuid', $uuid)->with('items')->firstOrFail();
     }
 }

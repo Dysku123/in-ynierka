@@ -3,8 +3,14 @@
 @section('content')
 <div class="bg-white shadow-xl rounded-2xl overflow-hidden border border-yellow-100">
     <div class="md:flex">
-        <div class="md:w-1/2 bg-yellow-100 flex items-center justify-center p-12">
-            <span class="text-9xl">🧀</span>
+        <div class="md:w-1/2 bg-yellow-50 flex items-center justify-center relative">
+            @if($product->image_path)
+                <img src="{{ asset('storage/' . $product->image_path) }}" alt="{{ $product->name }}" class="object-cover w-full h-full absolute inset-0">
+            @else
+                <div class="p-12">
+                    <span class="text-9xl">🧀</span>
+                </div>
+            @endif
         </div>
 
         <div class="p-8 md:w-1/2">
@@ -60,11 +66,19 @@
 
 <script>
     const qtyInput = document.getElementById('qty');
+
+    const getValidQuantity = () => {
+        const val = parseInt(qtyInput.value);
+        return isNaN(val) ? 1 : val;
+    };
+
     document.getElementById('plus').addEventListener('click', () => {
-        qtyInput.value = parseInt(qtyInput.value) + 1;
+        qtyInput.value = getValidQuantity() + 1;
     });
     document.getElementById('minus').addEventListener('click', () => {
-        if(qtyInput.value > 1) qtyInput.value = parseInt(qtyInput.value) - 1;
+        const current = getValidQuantity();
+        if(current > 1) qtyInput.value = current - 1;
+        else qtyInput.value = 1; // Zabezpieczenie przed ujemnymi/NaN
     });
 </script>
 @endsection

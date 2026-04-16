@@ -17,6 +17,7 @@ return new class extends Migration
             $table->foreignId('user_id')->nullable()->constrained();
             $table->string('email');
             $table->integer('total_price');
+            $table->string('uuid')->unique()->nullable();
             $table->string('status')->default('new');
         });
     }

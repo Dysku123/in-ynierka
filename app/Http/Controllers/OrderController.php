@@ -25,4 +25,9 @@ class OrderController extends Controller
         $orders= $orderService->getUserOrders($userId);
         return view('order.index', compact('orders'));
     }
+
+    public function showForGuest(string $uuid, OrderService $orderService){
+        $order = $orderService->getOrderByUuid($uuid);
+        return view('order.guest_show', compact('order'));
+    }
 }
