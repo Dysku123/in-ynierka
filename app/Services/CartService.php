@@ -85,4 +85,8 @@ class CartService
             $sessionItem->delete();
         }
     }
+
+    public function clearCart(string $sessionId): void{
+        CartItem::where('session_id', $sessionId)->delete();
+    }
 }

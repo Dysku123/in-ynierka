@@ -6,6 +6,7 @@
         <p>Numer zamówienia: {{ $order->id }}</p>
         <p>Data: {{ $order->created_at->format('d.m.Y H:i') }}</p>
         <p>Łączna cena: {{ number_format($order->total_price / 100, 2, ',', ' ') }} zł</p>
+         <p>status:{{$order->status->label()}}</p>
         <ul>
             @foreach ($order->items as $item)
             <li>

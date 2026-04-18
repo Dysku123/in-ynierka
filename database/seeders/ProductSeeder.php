@@ -14,9 +14,20 @@ class ProductSeeder extends Seeder
      */
     public function run(): void
     {
-        $hardCheese = Category::where('slug', 'sery-twarde')->first();//wyciagamy sobie kategorie do zmiennych, zeby miec id
-        $moldCheese = Category::where('slug', 'sery-plesniowe')->first();
-        $goatCheese = Category::where('slug', 'sery-kozie')->first();
+        $hardCheese = Category::firstOrCreate(
+            ['slug' => 'sery-twarde'],
+            ['name' => 'Sery twarde']
+        );
+
+        $moldCheese = Category::firstOrCreate(
+            ['slug' => 'sery-plesniowe'],
+            ['name' => 'Sery pleśniowe']
+        );
+
+        $goatCheese = Category::firstOrCreate(
+            ['slug' => 'sery-kozie'],
+            ['name' => 'Sery kozie']
+        );
 
         Product::create([
             'category_id' =>$hardCheese->id,

@@ -56,7 +56,7 @@
                         @endguest
                         <div class="flex justify-end items-center gap-6">
                             <div class="text-xl font-bold text-gray-800">
-                                Do zapłaty: {{ number_format($totalPrice, 2, ',', ' ') }} zł
+                                Do zapłaty: {{ number_format($totalPrice/100, 2, ',', ' ') }} zł
                             </div>
                             <button type="submit"
                                 class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-6 rounded-lg transition-colors">

@@ -16,18 +16,22 @@ class OrderController extends Controller
         $email = $request->user()?->email ?? $request->input('email');
         $order = $orderService->createOrderFromCart($userId, $sessionId, $email);
 
+        if(isset($userId)){
+            return redirect()->route('orders.index')->with('success', 'Zamówienie złożone pomyślnie! Twoje ID zamówienia to: ' . $order->id);
+        } else{
+            return redirect()->route('order.guest_show', ['uuid' => $order->uuid])->with('success', 'Zamówienie złożone pomyślnie! Twoje ID zamówienia to: ' . $order->id);
+        }
 
-        return redirect()->route('home')->with('success', 'Zamówienie złożone pomyślnie! Twoje ID zamówienia to: ' . $order->id);
     }
 
     public function index(Request $request, OrderService $orderService){
         $userId = $request->user()?->id;
         $orders= $orderService->getUserOrders($userId);
-        return view('order.index', compact('orders'));
+        return view('showOrders', compact('orders'));
     }
 
     public function showForGuest(string $uuid, OrderService $orderService){
         $order = $orderService->getOrderByUuid($uuid);
-        return view('order.guest_show', compact('order'));
+        return view('guest_show', compact('order'));
     }
 }

@@ -7,7 +7,7 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Support\Facades\Mail;
 
-class SendOrderConfirmationEmail
+class SendOrderConfirmationEmail implements ShouldQueue// to jest do asynchronicznego wysyłania maila, żeby nie blokować procesu składania zamówienia
 {
     /**
      * Create the event listener.

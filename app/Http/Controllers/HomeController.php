@@ -23,6 +23,6 @@ class HomeController extends Controller
     public function product(string $slug , CatalogService $catalogService)
     {
         $product = $catalogService->getProductBySlug($slug);
-        return view('product_show', $product);
+        return view('product_show', compact('product'));
     }
 }

@@ -3,10 +3,15 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use App\Enums\OrderStatus;
 
 class Order extends Model
 {
     protected $fillable = ['user_id', 'email', 'total_price', 'status', 'uuid'];
+
+    protected $casts = [
+        'status' => OrderStatus::class, // łączymy kolumnę status z naszymi enumami
+    ];
 
     public function items()//bo to zwraca
     {

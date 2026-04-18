@@ -28,7 +28,7 @@ class OrderService
                 'user_id' => $userId,
                 'email' => $email,
                 'total_price' => $totalPrice,
-                'status' => OrderStatus::Pending->value,
+                'status' => OrderStatus::Pending,
                 'uuid' => is_null($userId) ? Str::uuid()->toString() : null
             ]);
 
@@ -69,7 +69,7 @@ class OrderService
     {
 
         $order = Order::findOrFail($orderId);
-        $order->status = $newStatus->value;
+        $order->status = $newStatus;
         $order->save();
         return $order;
     }
