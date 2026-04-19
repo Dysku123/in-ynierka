@@ -5,6 +5,7 @@ use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\OrderController;
+use App\Http\Controllers\Admin\OrderController as AdminOrderController; // wrzucamy alias, bo wywala błąd
 
 Route::get('/', [HomeController::class, 'index'])->name('home');
 
@@ -15,8 +16,6 @@ Route::post('/koszyk/dodaj', [CartController::class, 'add'])->name('cart.add');
 Route::get('/koszyk', [CartController::class, 'index'])->name('cart.show');
 Route::delete('/koszyk/{id}', [CartController::class, 'destroy'])->name('cart.destroy');
 Route::post('/zamowienie/stworz', [OrderController::class, 'store'])->name('order.store');
-Route::get('/zamowienie/status/{uuid}',[OrderController::class, 'showForGuest'])->name('order.guest_show');
-
 
 //Trasy chronione dla zalogowanych (Profil)
 Route::middleware('auth')->group(function () {
@@ -31,12 +30,17 @@ Route::middleware('auth')->group(function () {
     })->name('dashboard');
 });
 
+Route::middleware('signed')->group(function () {// weryfikuj hash w url dla niezalogowanych
+    Route::get('/zamowienie/status/{uuid}', [OrderController::class, 'showForGuest'])->name('order.guest_show');
+});
+
 //Panel Admina (tylko dla zalogowanych ADMINÓW)
-Route::middleware(['auth', 'admin'])->group(function () {
+Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(function () { //sprawdzić dlaczego dokłądnie admin
     Route::get('/admin', function () {
         return "Witaj w tajnym panelu admina! 🧀";
     })->name('admin.dashboard');
-
+    Route::patch('/order/{order}/status', [AdminOrderController::class, 'updateStatus'])->name('order.updateStatus');
+    Route::get('/order/{order}', [AdminOrderController::class, 'show'])->name('order.show');
 });
 
 require __DIR__.'/auth.php';
