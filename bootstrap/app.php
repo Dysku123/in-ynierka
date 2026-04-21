@@ -12,7 +12,7 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->alias([
-            'admin' => App\Http\Middleware\AdminMiddleware::class,// rejestracja middleware o nazwie 'admin' i wskazanie klasy, która będzie go obsługiwać
+            'admin' => \App\Http\Middleware\CheckAdminRole::class,// rejestracja middleware o nazwie 'admin' i wskazanie klasy, która będzie go obsługiwać
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

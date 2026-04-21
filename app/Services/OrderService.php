@@ -3,9 +3,7 @@
 namespace App\Services;
 
 use App\Models\Order;
-use App\Models\CartItem;
 use App\Models\OrderItem;
-use App\Services\CartService;
 use Illuminate\Support\Facades\DB;
 use App\Enums\OrderStatus;
 use Exception;
@@ -29,11 +27,12 @@ class OrderService
                 'email' => $email,
                 'total_price' => $totalPrice,
                 'status' => OrderStatus::Pending,
-                'uuid' => is_null($userId) ? Str::uuid()->toString() : null
+                'uuid' => Str::uuid()->toString(),
             ]);
 
             $orderItemsData = [];
             $cartItemIds = $cart->pluck('id')->all();
+            $now = now();
 
             foreach ($cart as $item) {
                 if (!$item->product) {
@@ -46,13 +45,13 @@ class OrderService
                     'price' => $item->product->price,
                     'portion_weight' => $item->portion_weight,
                     'quantity' => $item->quantity,
-                    'created_at' => now(),
-                    'updated_at' => now(),
+                    'created_at' => $now,
+                    'updated_at' => $now,
                 ];
             }
 
             OrderItem::insert($orderItemsData);
-            CartItem::whereIn('id', $cartItemIds)->delete();
+            $this->cartService->clearCartByIds($cartItemIds);
 
             \App\Events\OrderCreated::dispatch($order);// to triggeruje event wysylki potwierdzenia
 
@@ -65,10 +64,8 @@ class OrderService
         return Order::where('user_id', $userId)->with('items')->latest()->get();
     }
 
-    public function changeStatus(int $orderId, OrderStatus $newStatus)
+    public function changeStatus(Order $order, OrderStatus $newStatus): Order
     {
-
-        $order = Order::findOrFail($orderId);
         $order->status = $newStatus;
         $order->save();
         return $order;

@@ -5,8 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Services\OrderService;
-use App\Enums\OrderStatus; // do sprawdzania enmuma
-use Exception; // do weryfikacji, czy musze to kazdorazowo imporotwac, czy mozna raz na projekt
+use App\Enums\OrderStatus;
 use App\Models\Order;
 
 class OrderController extends Controller
@@ -19,7 +18,7 @@ class OrderController extends Controller
         ]);
         $status = OrderStatus::from($validated['status']);
 
-        $orderService->changeStatus($order->id, $status);
+        $orderService->changeStatus($order, $status);
 
         return redirect()->back()->with('success', 'Status zamówienia został zaktualizowany!');
     }
@@ -28,6 +27,12 @@ class OrderController extends Controller
     {
         $order->load('items'); // ładujemy relację z pozycjami zamówienia
         return view('admin.orders.show', compact('order'));
+    }
+
+    public function index()
+    {
+        $orders = Order::with('user')->latest()->paginate(20);
+        return view('admin.orders.index', compact('orders'));
     }
 
 }

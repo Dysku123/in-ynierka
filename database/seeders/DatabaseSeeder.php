@@ -18,6 +18,7 @@ class DatabaseSeeder extends Seeder
     $this->call([#to bierze seedery, php artisan db:seed
         CategorySeeder::class,
         ProductSeeder::class,
+        RoleAndAdminSeeder::class,
     ]);
 }
 }
