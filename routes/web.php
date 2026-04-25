@@ -42,6 +42,7 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::patch('/order/{order}/status', [AdminOrderController::class, 'updateStatus'])->name('order.updateStatus');
     Route::get('/order/{order}', [AdminOrderController::class, 'show'])->name('order.show');
     Route::get('/orders',[AdminOrderController::class, 'index'])->name('order.index');
+    Route::resource('products', \App\Http\Controllers\Admin\ProductController::class);// tutaj zaciąga mi wszystko na raz do 1, bo taki standard laravela
 });
 
 require __DIR__.'/auth.php';
