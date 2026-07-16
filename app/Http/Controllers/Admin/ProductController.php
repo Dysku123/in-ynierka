@@ -7,6 +7,8 @@ use Illuminate\Http\Request;
 use App\Models\Product;
 use App\Models\Category;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Validation\Rule;
+
 
 class ProductController extends Controller
 {
@@ -34,9 +36,9 @@ class ProductController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'name'=> 'required|string',
-            'slug'=> 'required|string',
-            'description'=>'string|nullable',
+            'name' => 'required|string',
+            'slug' => 'required|string|unique:products,slug',
+            'description' => 'string|nullable',
             'unit' => 'string|nullable',
             'price' => 'required|numeric',
             'weight_per_unit' => 'numeric|required',
@@ -44,8 +46,8 @@ class ProductController extends Controller
             'category_id' => 'exists:categories,id|required',
             'image' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:2048'
         ]);
-        $imagePath=null;
-        if($request->hasFile('image')){
+        $imagePath = null;
+        if ($request->hasFile('image')) {
             $imagePath = $request->file('image')->store('products', 'public');
         }
         $validated['image_path'] = $imagePath;
@@ -78,9 +80,13 @@ class ProductController extends Controller
     {
         $product = Product::findOrFail($id);
         $validated = $request->validate([
-            'name'=> 'required|string',
-            'slug'=> 'required|string',
-            'description'=>'string|nullable',
+            'name' => 'required|string',
+            'slug' => [
+                'required',
+                'string',
+                Rule::unique('products', 'slug')->ignore($product->id)
+            ],
+            'description' => 'string|nullable',
             'unit' => 'string|nullable',
             'price' => 'required|numeric',
             'weight_per_unit' => 'numeric|required',
@@ -88,13 +94,13 @@ class ProductController extends Controller
             'category_id' => 'exists:categories,id|required',
             'image' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:2048'
         ]);
-            if($request->hasFile('image')){
-                if($product->image_path){
-                    Storage::disk('public')->delete($product->image_path);
-                }
-                $imagePath = $request->file('image')->store('products', 'public');
-                $validated['image_path'] = $imagePath;
+        if ($request->hasFile('image')) {
+            if ($product->image_path) {
+                Storage::disk('public')->delete($product->image_path);
             }
+            $imagePath = $request->file('image')->store('products', 'public');
+            $validated['image_path'] = $imagePath;
+        }
         $product->update($validated);
         return redirect()->route('admin.products.index')->with('success', 'Produkt zaktualizowany pomyślnie!');
     }
@@ -105,7 +111,7 @@ class ProductController extends Controller
     public function destroy(string $id)
     {
         $product = Product::findOrFail($id);
-        if($product->image_path){
+        if ($product->image_path) {
             Storage::disk('public')->delete($product->image_path);
         }
         $product->delete();
