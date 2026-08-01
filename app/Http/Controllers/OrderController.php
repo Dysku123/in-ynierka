@@ -32,4 +32,17 @@ class OrderController extends Controller
         $url = URL::signedRoute('order.guest_show', ['uuid' => $order->uuid]);
         return redirect()->to($url)->with('success', 'Zamówienie złożone pomyślnie!');
     }
+
+    public function index(Request $request, OrderService $orderService)
+    {
+        $userId = $request->user()?->id;
+        $orders = $orderService->getUserOrders($userId);
+        return view('showOrders', compact('orders'));
+    }
+
+    public function showForGuest(string $uuid, OrderService $orderService)
+    {
+        $order = $orderService->getOrderByUuid($uuid);
+        return view('guest_show', compact('order'));
+    }
 }

@@ -6,6 +6,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\Admin\OrderController as AdminOrderController; // wrzucamy alias, bo wywala błąd
+use App\Http\Controllers\CheckoutController;
 
 Route::get('/', [HomeController::class, 'index'])->name('home');
 
@@ -43,6 +44,15 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::get('/order/{order}', [AdminOrderController::class, 'show'])->name('order.show');
     Route::get('/orders',[AdminOrderController::class, 'index'])->name('order.index');
     Route::resource('products', \App\Http\Controllers\Admin\ProductController::class);// tutaj zaciąga mi wszystko na raz do 1, bo taki standard laravela
+});
+
+Route::prefix('zamowienie/kasa')->name('checkout.')->group(function(){
+    Route::get('/adres', [CheckoutController::class, 'address'])->name('address');
+    Route::post('/adres', [CheckoutController::class, 'storeAddress'])->name('address.store');
+    Route::get('/dostawa', [CheckoutController::class, 'shipping'])->name('shipping');
+    Route::post('/dostawa', [CheckoutController::class, 'storeShipping'])->name('shipping.store');
+    Route::get('/podsumowanie', [CheckoutController::class, 'summary'])->name('summary');
+    Route::post('/finalizuj', [CheckoutController::class, 'placeOrder'])->name('place');
 });
 
 require __DIR__.'/auth.php';

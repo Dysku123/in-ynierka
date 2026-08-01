@@ -8,7 +8,21 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Order extends Model
 {
-    protected $fillable = ['user_id', 'email', 'total_price', 'status', 'uuid'];
+    protected $fillable = [
+        'user_id',
+        'email',
+        'total_price',
+        'status',
+        'uuid',
+        'shipping_name',
+        'shipping_surname',
+        'shipping_phone',
+        'shipping_street',
+        'shipping_postal_code',
+        'shipping_city',
+        'delivery_method',
+        'payment_method'
+    ];
 
     protected $casts = [
         'status' => OrderStatus::class, // łączymy kolumnę status z naszymi enumami

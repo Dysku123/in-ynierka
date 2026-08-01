@@ -57,4 +57,8 @@ class User extends Authenticatable
             'slug' => 'uzytkownik'
         ]);
     }
+    public function addresses()
+    {
+        return $this->hasMany(Address::class);
+    }
 }
