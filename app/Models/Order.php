@@ -5,6 +5,8 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use App\Enums\OrderStatus;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use App\Enums\DeliveryMethod;
+use App\Enums\PaymentMethod;
 
 class Order extends Model
 {
@@ -26,9 +28,11 @@ class Order extends Model
 
     protected $casts = [
         'status' => OrderStatus::class, // łączymy kolumnę status z naszymi enumami
+        'delivery_method' => DeliveryMethod::class,
+        'payment_method' => PaymentMethod::class,
     ];
 
-    public function items()//bo to zwraca
+    public function items() //bo to zwraca
     {
         return $this->hasMany(OrderItem::class);
     }

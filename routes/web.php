@@ -7,16 +7,17 @@ use App\Http\Controllers\HomeController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\Admin\OrderController as AdminOrderController; // wrzucamy alias, bo wywala błąd
 use App\Http\Controllers\CheckoutController;
+use App\Http\Controllers\AddressController;
+
 
 Route::get('/', [HomeController::class, 'index'])->name('home');
 
 //Katalog (Kategorie i Produkty) - dostępne dla wszystkich
-Route::get('/kategoria/{slug}', [HomeController::class, 'show'])->name('category.show');// po -> jest nazwa dla widoku
+Route::get('/kategoria/{slug}', [HomeController::class, 'show'])->name('category.show'); // po -> jest nazwa dla widoku
 Route::get('/produkt/{slug}', [HomeController::class, 'product'])->name('product.show');
 Route::post('/koszyk/dodaj', [CartController::class, 'add'])->name('cart.add');
 Route::get('/koszyk', [CartController::class, 'index'])->name('cart.show');
 Route::delete('/koszyk/{id}', [CartController::class, 'destroy'])->name('cart.destroy');
-Route::post('/zamowienie/stworz', [OrderController::class, 'store'])->name('order.store');
 
 //Trasy chronione dla zalogowanych (Profil)
 Route::middleware('auth')->group(function () {
@@ -24,6 +25,7 @@ Route::middleware('auth')->group(function () {
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
     Route::get('/zamowienia', [OrderController::class, 'index'])->name('orders.index');
+    Route::delete('/profil/adresy/{address}', [AddressController::class, 'destroy'])->name('address.destroy');
 
     // Dashboard (Breeze go tu zostawił)
     Route::get('/dashboard', function () {
@@ -31,7 +33,7 @@ Route::middleware('auth')->group(function () {
     })->name('dashboard');
 });
 
-Route::middleware('signed')->group(function () {// weryfikuj hash w url dla niezalogowanych
+Route::middleware('signed')->group(function () { // weryfikuj hash w url dla niezalogowanych
     Route::get('/zamowienie/status/{uuid}', [OrderController::class, 'showForGuest'])->name('order.guest_show');
 });
 
@@ -39,14 +41,14 @@ Route::middleware('signed')->group(function () {// weryfikuj hash w url dla niez
 Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(function () { //sprawdzić dlaczego dokłądnie admin
     Route::get('/admin', function () {
         return "Witaj w tajnym panelu admina! 🧀";
-    })->name('admin.dashboard');
+    })->name('dashboard');
     Route::patch('/order/{order}/status', [AdminOrderController::class, 'updateStatus'])->name('order.updateStatus');
     Route::get('/order/{order}', [AdminOrderController::class, 'show'])->name('order.show');
-    Route::get('/orders',[AdminOrderController::class, 'index'])->name('order.index');
-    Route::resource('products', \App\Http\Controllers\Admin\ProductController::class);// tutaj zaciąga mi wszystko na raz do 1, bo taki standard laravela
+    Route::get('/orders', [AdminOrderController::class, 'index'])->name('order.index');
+    Route::resource('products', \App\Http\Controllers\Admin\ProductController::class); // tutaj zaciąga mi wszystko na raz do 1, bo taki standard laravela
 });
 
-Route::prefix('zamowienie/kasa')->name('checkout.')->group(function(){
+Route::prefix('zamowienie/kasa')->name('checkout.')->group(function () {
     Route::get('/adres', [CheckoutController::class, 'address'])->name('address');
     Route::post('/adres', [CheckoutController::class, 'storeAddress'])->name('address.store');
     Route::get('/dostawa', [CheckoutController::class, 'shipping'])->name('shipping');
@@ -55,4 +57,4 @@ Route::prefix('zamowienie/kasa')->name('checkout.')->group(function(){
     Route::post('/finalizuj', [CheckoutController::class, 'placeOrder'])->name('place');
 });
 
-require __DIR__.'/auth.php';
+require __DIR__ . '/auth.php';

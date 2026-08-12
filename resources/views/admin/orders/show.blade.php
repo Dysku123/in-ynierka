@@ -5,24 +5,35 @@
         <h2 class="text-2xl font-bold mb-4 text-gray-800">Zarządzanie statusem</h2>
         <table class="table-auto w-full">
             <thead class="bg-gray-100 text-left text-gray-600">
-            <tr>
-                <th class="px-4 py-2">Nazwa</th>
-                <th class="px-4 py-2">Waga</th>
-                <th class="px-4 py-2">Ilość</th>
-                <th class="px-4 py-2">cena</th>
-            </tr>
+                <tr>
+                    <th class="px-4 py-2">Nazwa</th>
+                    <th class="px-4 py-2">Waga</th>
+                    <th class="px-4 py-2">Ilość</th>
+                    <th class="px-4 py-2">cena</th>
+                </tr>
             </thead>
             <tbody>
-            @foreach ($order->items as $item)
-                <tr>
-                    <td class="border px-4 py-2">{{ $item->product?->name ?? 'Usunięte'}}</td>
-                    <td class="border px-4 py-2">{{ $item->portion_weight }}</td>
-                    <td class="border px-4 py-2">{{ $item->quantity }}</td>
-                    <td class="border px-4 py-2">{{ number_format($item->price / 100, 2, ',', ' ') }} zł</td>
-                </tr>
-            @endforeach
+                @foreach ($order->items as $item)
+                    <tr>
+                        <td class="border px-4 py-2">{{ $item->product?->name ?? 'Usunięte' }}</td>
+                        <td class="border px-4 py-2">{{ $item->portion_weight }}</td>
+                        <td class="border px-4 py-2">{{ $item->quantity }}</td>
+                        <td class="border px-4 py-2">{{ number_format($item->price / 100, 2, ',', ' ') }} zł</td>
+                    </tr>
+                @endforeach
             </tbody>
         </table>
+        @if ($order->shipping_name)
+            <div class="mt-4 p-4 bg-gray-50 rounded-lg border">
+                <h3 class="font-semibold mb-2">Dane dostawy</h3>
+                <p>{{ $order->shipping_name }} {{ $order->shipping_surname }}</p>
+                <p>{{ $order->shipping_street }}</p>
+                <p>{{ $order->shipping_postal_code }} {{ $order->shipping_city }}</p>
+                <p>tel. {{ $order->shipping_phone }}</p>
+                <p class="mt-2">Dostawa: {{ $order->delivery_method?->label() ?? '—' }}</p>
+                <p>Płatność: {{ $order->payment_method?->label() ?? '—' }}</p>
+            </div>
+        @endif
         <form action = '{{ route('admin.order.updateStatus', $order) }}' method = 'post' class = 'mt-8 border-t pt-6'>
             @method('patch')
             @csrf

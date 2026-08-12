@@ -13,7 +13,7 @@ class OrderService
 {
     public function __construct(protected CartService $cartService) {}
 
-    public function createOrderFromCart(?int $userId, string $sessionId, string $email)
+    public function createOrderFromCart(?int $userId, string $sessionId, string $email, array $shipping = [])
     {
         $cart = $this->cartService->getCartItems($userId, $sessionId);
 
@@ -21,14 +21,14 @@ class OrderService
             throw new Exception('Koszyk jest pusty.');
         }
         $totalPrice = $this->cartService->calculateTotal($cart);
-        return DB::transaction(function () use ($userId, $cart, $totalPrice, $email) {
-            $order = Order::create([
+        return DB::transaction(function () use ($userId, $cart, $totalPrice, $email, $shipping) {
+            $order = Order::create(array_merge([
                 'user_id' => $userId,
                 'email' => $email,
                 'total_price' => $totalPrice,
                 'status' => OrderStatus::Pending,
                 'uuid' => Str::uuid()->toString(),
-            ]);
+            ], $shipping));
 
             $orderItemsData = [];
             $cartItemIds = $cart->pluck('id')->all();
@@ -53,7 +53,7 @@ class OrderService
             OrderItem::insert($orderItemsData);
             $this->cartService->clearCartByIds($cartItemIds);
 
-            \App\Events\OrderCreated::dispatch($order);// to triggeruje event wysylki potwierdzenia
+            \App\Events\OrderCreated::dispatch($order); // to triggeruje event wysylki potwierdzenia
 
             return $order;
         });
