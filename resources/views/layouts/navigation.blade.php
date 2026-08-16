@@ -5,6 +5,12 @@
                 <div class="shrink-0 flex items-center font-bold text-yellow-600">
                     <a href="{{ route('home') }}">Gouda & Spółka 🧀</a>
                 </div>
+                <div class="hidden sm:flex sm:items-center sm:ms-10 space-x-6">
+                    <a href="{{ route('home') }}"
+                        class="text-sm font-medium text-gray-600 hover:text-yellow-600">Sklep</a>
+                    <a href="{{ route('cart.show') }}"
+                        class="text-sm font-medium text-gray-600 hover:text-yellow-600">Koszyk 🛒</a>
+                </div>
             </div>
 
             <div class="hidden sm:flex sm:items-center sm:ms-6">
@@ -30,6 +36,7 @@
                                 <x-dropdown-link :href="route('admin.dashboard')">Panel Admina 🧀</x-dropdown-link>
                             @endif
                             <x-dropdown-link :href="route('profile.edit')">{{ __('Profile') }}</x-dropdown-link>
+                            <x-dropdown-link :href="route('orders.index')">Moje zamówienia</x-dropdown-link>
                             <form method="POST" action="{{ route('logout') }}">
                                 @csrf
                                 <x-dropdown-link :href="route('logout')"
@@ -64,6 +71,10 @@
     </div>
 
     <div :class="{ 'block': open, 'hidden': !open }" class="hidden sm:hidden">
+        <div class="pt-2 pb-3 space-y-1">
+            <x-responsive-nav-link :href="route('home')">Sklep</x-responsive-nav-link>
+            <x-responsive-nav-link :href="route('cart.show')">Koszyk 🛒</x-responsive-nav-link>
+        </div>
         <div class="pt-4 pb-1 border-t border-gray-200">
             <div class="px-4">
                 @auth
@@ -81,6 +92,7 @@
                     @if (Auth::user()->role->slug === 'admin')
                         <x-responsive-nav-link :href="route('admin.dashboard')">Panel Admina 🧀</x-responsive-nav-link>
                     @endif
+                    <x-responsive-nav-link :href="route('orders.index')">Moje zamówienia</x-responsive-nav-link>
                     <x-responsive-nav-link :href="route('profile.edit')">{{ __('Profile') }}</x-responsive-nav-link>
                     <form method="POST" action="{{ route('logout') }}">
                         @csrf

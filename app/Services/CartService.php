@@ -39,15 +39,15 @@ class CartService
         return $this->getCartQuery($userId, $sessionId)->with('product')->get();
     }
 
-    public function calculateTotal(Collection $cartItems): float
+    public function calculateTotal(Collection $cartItems): int
     {
         $total = 0;
         foreach ($cartItems as $item) {
             if (!$item->product) {
-                continue; // sprawdzamy, czy item w ogóle istniehe
+                continue;//sprawdzamy, czy w ogóle jest
             }
-
-            $total += $item->quantity * $item->portion_weight * $item->product->price / 100;
+            $lineTotal = (int) round($item->quantity * $item->portion_weight * $item->product->price / 100);
+            $total += $lineTotal;
         }
         return $total;
     }
@@ -88,5 +88,12 @@ class CartService
         }
 
         return $query->where('session_id', $sessionId);
+    }
+
+    public function GetProductQuantity(?int $userId, string $sessionId, int $productId): int
+    {
+        return (int) $this->getCartQuery($userId, $sessionId)
+            ->where('product_id', $productId)
+            ->sum('quantity');
     }
 }

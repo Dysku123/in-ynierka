@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\DB;
 use App\Enums\OrderStatus;
 use Exception;
 use Illuminate\Support\Str;
+use App\Models\Product;
 
 class OrderService
 {
@@ -38,6 +39,12 @@ class OrderService
                 if (!$item->product) {
                     throw new Exception('Produkt o ID ' . $item->product_id . ' nie istnieje. Nie można złożyć zamówienia.');
                 }
+                $product = Product::where('id', $item->product_id)->lockForUpdate()->first();
+                $grams = $item->portion_weight * $item->quantity;
+                if ($product->stock_quantity < $grams) {
+                    throw new Exception('Za mało na stanie: ' . $product->name . '. Dostępne: ' . $product->stock_quantity . ' g.');
+                }
+                $product->decrement('stock_quantity', $grams);
                 $orderItemsData[] = [
                     'order_id' => $order->id,
                     'product_id' => $item->product_id,
@@ -74,5 +81,18 @@ class OrderService
     public function getOrderByUuid(string $uuid)
     {
         return Order::where('uuid', $uuid)->with('items')->firstOrFail();
+    }
+
+    public function anonymizeUserOrders(int $userId): void
+    {
+        Order::where('user_id', $userId)->update([
+            'shipping_name' => 'Usunięty',
+            'shipping_surname' => 'użytkownik',
+            'shipping_phone' => null,
+            'shipping_street' => null,
+            'shipping_postal_code' => null,
+            'shipping_city' => null,
+            'email' => 'anonim@usuniete.local',
+        ]);
     }
 }

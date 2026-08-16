@@ -22,7 +22,15 @@ class CartController extends Controller
         $productId = $request->input('product_id');
         $portionWeight = $request->input('portion_weight');
         $quantity = $request->input('quantity');
-
+        $product = \App\Models\Product::findOrFail($productId);
+        $portionWeight = $product->min_portion;
+        $alreadyInCart = $cartService->getProductQuantity($userId, $sessionId, $productId);
+        $totalGrams = ($alreadyInCart + $quantity) * $product->min_portion;
+        if ($totalGrams > $product->stock_quantity) {
+            return back()->withErrors([
+                'stock' => 'Niestety, nie mamy tyle na stanie. Dostępne: ' . $product->stock_quantity . ' g „' . $product->name . '".',
+            ]);
+        }
         $cartService->addToCart($userId, $sessionId, $productId, $portionWeight, $quantity);
 
         return back()->with('success', 'Produkt dodany do koszyka! 🛒');
