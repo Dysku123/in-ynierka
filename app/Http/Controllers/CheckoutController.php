@@ -29,12 +29,14 @@ class CheckoutController extends Controller
     public function storeAddress(Request $request)
     {
         $rules = [
-            'name' => 'required|string|max:255',
-            'surname' => 'required|string|max:255',
-            'phone' => 'required|string|max:30',
-            'street' => 'required|string|max:255',
-            'postal_code' => 'required|string|max:12',
-            'city' => 'required|string|max:255',
+            'name' => ['required', 'string', 'max:255', 'regex:/^[\p{L}\s-]+$/u'],
+            'surname' => ['required', 'string', 'max:255', 'regex:/^[\p{L}\s-]+$/u'],
+            'phone' => ['required', 'regex:/^\d{9}$/'],
+            'street' => ['required', 'string', 'max:255'],
+            'house_number' => ['required', 'string', 'max:20'],
+            'apartment_number' => ['nullable', 'string', 'max:20'],
+            'postal_code' => ['required', 'string', 'regex:/^\d{2}-\d{3}$/'],
+            'city' => ['required', 'string', 'max:255', 'regex:/^[\p{L}\s-]+$/u'],
         ];
         if (!$request->user()) { //dla goscia sprawdzamy emial
             $rules['email'] = 'required|email';
@@ -110,6 +112,8 @@ class CheckoutController extends Controller
             'shipping_surname' => $address['surname'] ?? null,
             'shipping_phone' => $address['phone'] ?? null,
             'shipping_street' => $address['street'] ?? null,
+            'shipping_house_number' => $address['house_number'] ?? null,
+            'shipping_apartment_number' => $address['apartment_number'] ?? null,
             'shipping_postal_code' => $address['postal_code'] ?? null,
             'shipping_city' => $address['city'] ?? null,
             'delivery_method' => $checkout['delivery_method'],

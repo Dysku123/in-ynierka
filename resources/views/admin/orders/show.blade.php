@@ -1,53 +1,52 @@
 @extends('layouts.app')
 
 @section('content')
-    <div class="bg-white shadow-lg rounded-lg p-6 mb-8 max-w-2xl mx-auto">
-        <h2 class="text-2xl font-bold mb-4 text-gray-800">Zarządzanie statusem</h2>
-        <table class="table-auto w-full">
-            <thead class="bg-gray-100 text-left text-gray-600">
+    <div class="card">
+        <h2 class="section-title">Zamówienie #{{ $order->id }} — zarządzanie statusem</h2>
+
+        <table class="table table--bordered">
+            <thead>
                 <tr>
-                    <th class="px-4 py-2">Nazwa</th>
-                    <th class="px-4 py-2">Waga</th>
-                    <th class="px-4 py-2">Ilość</th>
-                    <th class="px-4 py-2">cena</th>
+                    <th>Nazwa</th>
+                    <th>Waga</th>
+                    <th>Ilość</th>
+                    <th>Cena</th>
                 </tr>
             </thead>
             <tbody>
                 @foreach ($order->items as $item)
                     <tr>
-                        <td class="border px-4 py-2">{{ $item->product?->name ?? 'Usunięte' }}</td>
-                        <td class="border px-4 py-2">{{ $item->portion_weight }}</td>
-                        <td class="border px-4 py-2">{{ $item->quantity }}</td>
-                        <td class="border px-4 py-2">{{ number_format($item->price / 100, 2, ',', ' ') }} zł</td>
+                        <td>{{ $item->product?->name ?? $item->name }}</td>
+                        <td>{{ $item->portion_weight }} g</td>
+                        <td>{{ $item->quantity }} szt.</td>
+                        <td>{{ number_format($item->price / 100, 2, ',', ' ') }} zł</td>
                     </tr>
                 @endforeach
             </tbody>
         </table>
+
         @if ($order->shipping_name)
-            <div class="mt-4 p-4 bg-gray-50 rounded-lg border">
-                <h3 class="font-semibold mb-2">Dane dostawy</h3>
+            <div class="summary-box mt-4">
+                <h3 class="form-label">Dane dostawy</h3>
                 <p>{{ $order->shipping_name }} {{ $order->shipping_surname }}</p>
-                <p>{{ $order->shipping_street }}</p>
+                <p>{{ $order->shipping_street }} {{ $order->shipping_house_number }}@if ($order->shipping_apartment_number)/{{ $order->shipping_apartment_number }}@endif</p>
                 <p>{{ $order->shipping_postal_code }} {{ $order->shipping_city }}</p>
                 <p>tel. {{ $order->shipping_phone }}</p>
                 <p class="mt-2">Dostawa: {{ $order->delivery_method?->label() ?? '—' }}</p>
                 <p>Płatność: {{ $order->payment_method?->label() ?? '—' }}</p>
             </div>
         @endif
-        <form action = '{{ route('admin.order.updateStatus', $order) }}' method = 'post' class = 'mt-8 border-t pt-6'>
+
+        <form action="{{ route('admin.order.updateStatus', $order) }}" method="post" class="mt-6">
             @method('patch')
             @csrf
-            <label for = 'status' class="block mb-2 text-gray-700 font-bold">Status:</label>
-            <select name = 'status' id = 'status'
-                class="border border-gray-300 rounded px-3 py-2 w-full focus:outline-none focus:border-blue-500">
+            <label class="form-label">Status:</label>
+            <select name="status" class="form-select mb-4">
                 @foreach (\App\Enums\OrderStatus::cases() as $status)
-                    <option value="{{ $status->value }}" @selected($order->status === $status)>
-                        {{ $status->label() }}
-                    </option>
+                    <option value="{{ $status->value }}" @selected($order->status === $status)>{{ $status->label() }}</option>
                 @endforeach
             </select>
-            <button type = 'submit' class="text-white bg-blue-500 px-4 py-2 mt-4 rounded shadow hover:bg-blue-600">Zmień
-                status</button>
+            <button type="submit" class="btn btn--blue">Zmień status</button>
         </form>
     </div>
 @endsection

@@ -20,6 +20,8 @@ class Order extends Model
         'shipping_surname',
         'shipping_phone',
         'shipping_street',
+        'shipping_house_number',
+        'shipping_apartment_number',
         'shipping_postal_code',
         'shipping_city',
         'delivery_method',

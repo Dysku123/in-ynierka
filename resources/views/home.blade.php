@@ -1,43 +1,60 @@
 @extends('layouts.app')
 
 @section('content')
-    <div class="bg-white shadow-lg rounded-lg p-6 mb-8">
-        <h1 class="text-4xl font-bold text-yellow-600 mb-4">Witaj w sklepie: {{ $shopName }}</h1>
-        <p class="text-lg mb-4">Wybierz kategorię swoich ulubionych serów:</p>
+    @if (session('success'))
+        <div class="alert alert--success">{{ session('success') }}</div>
+    @endif
+    @if ($errors->any())
+        <div class="alert alert--error">
+            @foreach ($errors->all() as $error)
+                <div>{{ $error }}</div>
+            @endforeach
+        </div>
+    @endif
 
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6">
+    <div class="card">
+        <h1 class="title">Witaj w sklepie: {{ $shopName }}</h1>
+        <p class="subtitle">Wybierz kategorię swoich ulubionych serów:</p>
+
+        <div class="grid grid--3 mt-6">
             @foreach ($categories as $category)
-                <div class="bg-yellow-100 p-4 rounded border border-yellow-300 shadow hover:bg-yellow-200 transition">
-                    <h2 class="text-xl font-bold text-yellow-800">{{ $category->name }}</h2>
-                    <a href="{{ route('category.show', $category->slug) }}"
-                        class="text-sm text-yellow-700 underline mt-2 block">Zobacz produkty &rarr;</a>
+                <div class="category-card">
+                    <h2 class="category-card__title">{{ $category->name }}</h2>
+                    <a href="{{ route('category.show', $category->slug) }}" class="category-card__link">Zobacz produkty &rarr;</a>
                 </div>
             @endforeach
         </div>
     </div>
 
-    <div class="mt-12">
-        <h2 class="text-3xl font-bold text-gray-800 mb-6 border-b-2 border-yellow-400 pb-2 inline-block">Nowości w ofercie 🆕
-        </h2>
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mt-4">
+    <div class="mt-6">
+        <h2 class="section-title">Nowości w ofercie 🆕</h2>
+        <div class="grid grid--3 mt-4">
             @foreach ($products as $product)
-                <div class="bg-white p-4 rounded-lg shadow border border-gray-100">
-                    <h3 class="text-lg font-bold">{{ $product->name }}</h3>
-                    <p class="text-yellow-700 font-semibold">{{ number_format($product->price / 100, 2, ',', ' ') }} zł</p>
-                    <a href="{{ route('product.show', $product->slug) }}"
-                        class="mt-3 block text-center bg-gray-800 text-white py-2 rounded text-sm hover:bg-gray-700">Szczegóły</a>
+                <div class="product-card">
+                    <h3 class="product-card__name">{{ $product->name }}</h3>
+                    <p class="product-card__price">{{ number_format($product->price / 100, 2, ',', ' ') }} zł</p>
+                    <a href="{{ route('product.show', $product->slug) }}" class="btn btn--dark btn--block">Szczegóły</a>
+                    <form method="POST" action="{{ route('cart.add') }}">
+                        @csrf
+                        <input type="hidden" name="product_id" value="{{ $product->id }}">
+                        <input type="hidden" name="portion_weight" value="{{ $product->min_portion }}">
+                        <input type="hidden" name="quantity" value="1">
+                        <button type="submit" class="btn btn--yellow btn--block">+ Do koszyka ({{ $product->min_portion }} g)</button>
+                    </form>
                 </div>
             @endforeach
         </div>
     </div>
+
     @auth
         @if (auth()->user()->role->slug === 'admin')
-            <div class="bg-blue-100 p-4 mb-4 rounded border border-blue-300">
-                <p class="text-blue-800 font-bold">Panel Admina: Witaj, {{ auth()->user()->name }}!</p>
-                <a href="{{ route('admin.dashboard') }}"
-                    class="bg-blue-500 text-white px-4 py-2 rounded shadow hover:bg-blue-600">
-                    + Dodaj nowy ser
-                </a>
+            <div class="admin-panel">
+                <p class="admin-panel__title">Panel Admina — witaj, {{ auth()->user()->name }}! 🧀</p>
+                <div class="admin-panel__actions">
+                    <a href="{{ route('admin.products.index') }}" class="btn btn--blue">Zarządzaj produktami</a>
+                    <a href="{{ route('admin.products.create') }}" class="btn btn--green">+ Dodaj nowy ser</a>
+                    <a href="{{ route('admin.order.index') }}" class="btn btn--dark">Zamówienia</a>
+                </div>
             </div>
         @endif
     @endauth

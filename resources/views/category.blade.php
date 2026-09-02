@@ -1,26 +1,37 @@
 @extends('layouts.app')
 
 @section('content')
+    @if (session('success'))
+        <div class="alert alert--success">{{ session('success') }}</div>
+    @endif
+    @if ($errors->any())
+        <div class="alert alert--error">
+            @foreach ($errors->all() as $error)
+                <div>{{ $error }}</div>
+            @endforeach
+        </div>
+    @endif
+
     <div class="mb-6">
-        <a href="/" class="text-yellow-600 hover:underline">&larr; Powrót do kategorii</a>
+        <a href="{{ route('home') }}" class="category-card__link">&larr; Powrót do kategorii</a>
     </div>
 
-    <h1 class="text-3xl font-bold text-yellow-800 mb-6">Kategoria: {{ $category->name }}</h1>
+    <h1 class="title">Kategoria: {{ $category->name }}</h1>
 
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+    <div class="grid grid--3">
         @foreach ($category->products as $product)
-            <div class="bg-white p-6 rounded-lg shadow-md border border-yellow-200">
-                <h2 class="text-xl font-bold mb-2">{{ $product->name }}</h2>
-                <p class="text-gray-600 text-sm mb-4">{{ $product->description }}</p>
-                <div class="flex justify-between items-center mt-4">
-                    <span class="text-lg font-bold text-yellow-700">
-                        {{ number_format($product->price / 100, 2, ',', ' ') }} zł{{-- zmienamy grosze na plny --}}
-                    </span>
-                    <a href="/produkt/{{ $product->slug }}"
-                        class="bg-yellow-500 hover:bg-yellow-600 text-white px-4 py-2 rounded shadow">
-                        Szczegóły
-                    </a>
-                </div>
+            <div class="product-card">
+                <h2 class="product-card__name">{{ $product->name }}</h2>
+                <p class="muted mb-2">{{ $product->description }}</p>
+                <p class="product-card__price">{{ number_format($product->price / 100, 2, ',', ' ') }} zł</p>
+                <a href="{{ route('product.show', $product->slug) }}" class="btn btn--dark btn--block">Szczegóły</a>
+                <form method="POST" action="{{ route('cart.add') }}">
+                    @csrf
+                    <input type="hidden" name="product_id" value="{{ $product->id }}">
+                    <input type="hidden" name="portion_weight" value="{{ $product->min_portion }}">
+                    <input type="hidden" name="quantity" value="1">
+                    <button type="submit" class="btn btn--yellow btn--block">+ Do koszyka ({{ $product->min_portion }} g)</button>
+                </form>
             </div>
         @endforeach
     </div>

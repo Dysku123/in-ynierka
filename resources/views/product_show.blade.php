@@ -2,83 +2,59 @@
 
 @section('content')
     @if (session('success'))
-        <div class="p-4 mb-4 text-sm text-green-700 bg-green-100 rounded-lg">{{ session('success') }}</div>
+        <div class="alert alert--success">{{ session('success') }}</div>
     @endif
     @if ($errors->any())
-        <div class="p-4 mb-4 text-sm text-red-700 bg-red-100 rounded-lg">
+        <div class="alert alert--error">
             @foreach ($errors->all() as $error)
                 <div>{{ $error }}</div>
             @endforeach
         </div>
     @endif
-    <div class="bg-white shadow-xl rounded-2xl overflow-hidden border border-yellow-100">
-        <div class="md:flex">
-            <div class="md:w-1/2 bg-yellow-50 flex items-center justify-center relative">
-                @if ($product->image_path)
-                    <img src="{{ asset('storage/' . $product->image_path) }}" alt="{{ $product->name }}"
-                        class="object-cover w-full h-full absolute inset-0">
-                @else
-                    <div class="p-12">
-                        <span class="text-9xl">🧀</span>
+
+    <div class="product-detail">
+        <div class="product-detail__media">
+            @if ($product->image_path)
+                <img src="{{ asset('storage/' . $product->image_path) }}" alt="{{ $product->name }}">
+            @else
+                <span class="product-detail__emoji">🧀</span>
+            @endif
+        </div>
+
+        <div class="product-detail__body">
+            <div class="product-detail__category">{{ $product->category->name }}</div>
+            <h1 class="product-detail__name">{{ $product->name }}</h1>
+            <p class="muted mt-4">{{ $product->description }}</p>
+
+            <div class="product-detail__price">
+                {{ number_format($product->price / 100, 2, ',', ' ') }} zł
+                <span class="muted" style="font-size:1rem;">/ 100g</span>
+            </div>
+
+            <form method="POST" action="{{ route('cart.add') }}" class="mt-6">
+                @csrf
+                <input type="hidden" name="product_id" value="{{ $product->id }}">
+
+                <div class="form-group">
+                    <p class="muted">Minimalna porcja: <strong>{{ $product->min_portion }} g</strong></p>
+                    <p class="muted" style="font-size:0.8rem;">Zamawiasz wielokrotność tej porcji — wybierz liczbę porcji poniżej.</p>
+                    <input type="hidden" name="portion_weight" value="{{ $product->min_portion }}">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Liczba porcji:</label>
+                    <div class="qty-stepper">
+                        <div class="qty-stepper__box">
+                            <button type="button" id="minus" class="qty-stepper__btn">-</button>
+                            <input type="number" name="quantity" id="qty" value="1" class="qty-stepper__input" readonly>
+                            <button type="button" id="plus" class="qty-stepper__btn">+</button>
+                        </div>
+                        <p class="muted">Razem: <strong id="total-grams">{{ $product->min_portion }}</strong> g</p>
                     </div>
-                @endif
-            </div>
-
-            <div class="p-8 md:w-1/2">
-                <div class="uppercase tracking-wide text-sm text-yellow-600 font-semibold">
-                    {{ $product->category->name }}
-                </div>
-                <h1 class="text-4xl font-bold text-gray-900 mt-2">{{ $product->name }}</h1>
-
-                <p class="mt-4 text-gray-600 leading-relaxed">
-                    {{ $product->description }}
-                </p>
-
-                <div class="mt-6 flex items-center">
-                    <span class="text-3xl font-bold text-gray-900">
-                        {{ number_format($product->price / 100, 2, ',', ' ') }} zł
-                    </span>
-                    <span class="ml-2 text-gray-500">/ 100g</span>
                 </div>
 
-                <div class="mt-8">
-                    <form method="POST" action="{{ route('cart.add') }}">
-                        @csrf
-                        <input type="hidden" name="product_id" value="{{ $product->id }}">
-
-                        <div class="mb-6">
-                            <p class = "text-sm text-gray-700">
-                                Minimalna porcja: <span class= "font-semibold">{{ $product->min_portion }}g</span>
-                            </p>
-                            <p class = "text-xs text-gray-500 mt-1">Zamawiasz wielokrotność tej porcji - wybierz liczbę
-                                porcji poniżej.</p>
-                            <input type="hidden" name = "portion_weight" value ="{{ $product->min_portion }}">
-                        </div>
-
-                        <div class="mb-4">
-                            <label class="block text-sm font-medium text-gray-700 mb-2">Liczba porcji:</label>
-                            <div class="flex items-center gap-4">
-                                <div class="flex items-center border border-gray-300 rounded-lg">
-                                    <button type="button" id="minus"
-                                        class="px-4 py-3 hover:bg-gray-100 rounded-l-lg">-</button>
-                                    <input type="number" name="quantity" id="qty" value="1"
-                                        class="w-12 text-center border-none focus:ring-0" readonly>
-                                    <button type="button" id="plus"
-                                        class="px-4 py-3 hover:bg-gray-100 rounded-r-lg">+</button>
-                                </div>
-                                <p class="text-gray-700">Razem: <span id="total-grams"
-                                        class="font-semibold">{{ $product->min_portion }}</span> g</p>
-                            </div>
-                        </div>
-
-                        <button type="submit"
-                            class="w-full bg-yellow-500 hover:bg-yellow-600 text-white font-bold py-3 px-8 rounded-lg shadow-lg transition">
-                            Dodaj do koszyka 🛒
-                        </button>
-
-                    </form>
-                </div>
-            </div>
+                <button type="submit" class="btn btn--yellow btn--lg btn--block">Dodaj do koszyka 🛒</button>
+            </form>
         </div>
     </div>
 

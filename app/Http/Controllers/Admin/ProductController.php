@@ -40,11 +40,12 @@ class ProductController extends Controller
             'slug' => 'required|string|unique:products,slug',
             'description' => 'string|nullable',
             'unit' => 'string|nullable',
-            'price' => 'required|numeric',
-            'weight_per_unit' => 'numeric|required',
-            'stock_quantity' => 'numeric|required',
+            'price' => 'required|integer|min:0',
+            'weight_per_unit' => 'required|numeric|min:0',
+            'stock_quantity' => 'required|integer|min:0',
             'category_id' => 'exists:categories,id|required',
-            'image' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:2048'
+            'image' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:2048',
+            'min_portion' => 'required|integer|min:1'
         ]);
         $imagePath = null;
         if ($request->hasFile('image')) {
@@ -88,11 +89,12 @@ class ProductController extends Controller
             ],
             'description' => 'string|nullable',
             'unit' => 'string|nullable',
-            'price' => 'required|numeric',
-            'weight_per_unit' => 'numeric|required',
-            'stock_quantity' => 'numeric|required',
+            'price' => 'required|integer|min:0',
+            'weight_per_unit' => 'required|numeric|min:0',
+            'stock_quantity' => 'required|integer|min:0',
             'category_id' => 'exists:categories,id|required',
-            'image' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:2048'
+            'image' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:2048',
+            'min_portion' => 'required|integer|min:1'
         ]);
         if ($request->hasFile('image')) {
             if ($product->image_path) {

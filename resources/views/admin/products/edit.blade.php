@@ -1,63 +1,65 @@
 @extends('layouts.app')
 
 @section('content')
-    <div class="container mx-auto max-w-7xl bg-white shadow-lg rounded-lg p-6 mt-8">
-        <form action ="{{ route('admin.products.update', $product->id) }}" method ="POST" enctype = "multipart/form-data">
+    <div class="card">
+        <h2 class="section-title">Edycja produktu</h2>
+
+        @if ($errors->any())
+            <div class="alert alert--error">
+                @foreach ($errors->all() as $error)
+                    <div>{{ $error }}</div>
+                @endforeach
+            </div>
+        @endif
+
+        <form action="{{ route('admin.products.update', $product->id) }}" method="POST" enctype="multipart/form-data" class="form">
             @csrf
             @method('PUT')
-            <div class="mb-4">
-                <label for="name" class="block text-gray-700 font-bold mb-2">nazwa</label>
-                <input type = 'text' name = 'name'
-                    class="border border-gray-300 rounded px-3 py-2 w-full focus:outline-none focus:border-blue-500" value ="{{old('name', $product->name)}}">
+            <div class="form-group">
+                <label class="form-label">Nazwa</label>
+                <input type="text" name="name" value="{{ old('name', $product->name) }}" class="form-input">
             </div>
-            <div class="mb-4">
-                <label for="Slug" class="block text-gray-700 font-bold mb-2">Slug</label>
-                <input type = 'text' name = 'slug'
-                    class="border border-gray-300 rounded px-3 py-2 w-full focus:outline-none focus:border-blue-500" value ="{{old('slug', $product->slug)}}">
+            <div class="form-group">
+                <label class="form-label">Slug</label>
+                <input type="text" name="slug" value="{{ old('slug', $product->slug) }}" class="form-input">
             </div>
-            <div class="mb-4">
-                <label for="Cena" class="block text-gray-700 font-bold mb-2">Cena w groszach</label>
-                <input type = 'number' name = 'price'
-                    class="border border-gray-300 rounded px-3 py-2 w-full focus:outline-none focus:border-blue-500" min = '0' value ="{{old('price', $product->price)}}">
+            <div class="form-group">
+                <label class="form-label">Cena w groszach</label>
+                <input type="number" name="price" min="0" value="{{ old('price', $product->price) }}" class="form-input">
             </div>
-            <div class="mb-4">
-                <label for="Jednostka" class="block text-gray-700 font-bold mb-2">Jednostka</label>
-                <input type = 'text' name = 'unit'
-                    class="border border-gray-300 rounded px-3 py-2 w-full focus:outline-none focus:border-blue-500" value ="{{old('unit', $product->unit)}}">
+            <div class="form-group">
+                <label class="form-label">Jednostka</label>
+                <input type="text" name="unit" value="{{ old('unit', $product->unit) }}" class="form-input">
             </div>
-            <div class="mb-4">
-                <label for="weight_per_unit" class="block text-gray-700 font-bold mb-2">waga na jednostkę w g</label>
-                <input type = 'text' name = 'weight_per_unit'
-                    class="border border-gray-300 rounded px-3 py-2 w-full focus:outline-none focus:border-blue-500" value ="{{old('weight_per_unit', $product->weight_per_unit)}}">
+            <div class="form-group">
+                <label class="form-label">Waga na jednostkę (w g)</label>
+                <input type="text" name="weight_per_unit" value="{{ old('weight_per_unit', $product->weight_per_unit) }}" class="form-input">
             </div>
-            <div class="mb-4">
-                <label for="stock_quantity" class="block text-gray-700 font-bold mb-2">zapas magazynowy w g</label>
-                <input type = 'text' name = 'stock_quantity'
-                    class="border border-gray-300 rounded px-3 py-2 w-full focus:outline-none focus:border-blue-500" value ="{{old('stock_quantity', $product->stock_quantity)}}">
+            <div class="form-group">
+                <label class="form-label">Zapas magazynowy (w g)</label>
+                <input type="number" name="stock_quantity" min="0" value="{{ old('stock_quantity', $product->stock_quantity) }}" class="form-input">
             </div>
-            <div class="mb-4">
-                <label for ='category_id' class="block text-gray-700 font-bold mb-2">Kategoria </label>
-                <select name = 'category_id'
-                    class="border border-gray-300 rounded px-3 py-2 w-full focus:outline-none focus:border-blue-500">
+            <div class="form-group">
+                <label class="form-label">Minimalna porcja (w g)</label>
+                <input type="number" name="min_portion" min="1" value="{{ old('min_portion', $product->min_portion) }}" class="form-input">
+            </div>
+            <div class="form-group">
+                <label class="form-label">Kategoria</label>
+                <select name="category_id" class="form-select">
                     @foreach ($categories as $category)
-                        <option value ='{{ $category->id }}' {{ old('category_id', $product->category_id) == $category->id ? 'selected' : '' }}>
-                            {{ $category->name }}
-                        </option>
+                        <option value="{{ $category->id }}" @selected(old('category_id', $product->category_id) == $category->id)>{{ $category->name }}</option>
                     @endforeach
                 </select>
             </div>
-            <div class="mb-4">
-                <label for="description" class="block text-gray-700 font-bold mb-2">Opis</label>
-                <textarea name="description"
-                    class="border border-gray-300 rounded px-3 py-2 w-full focus:outline-none focus:border-blue-500">{{ old('description', $product->description) }}</textarea>
+            <div class="form-group">
+                <label class="form-label">Opis</label>
+                <textarea name="description" class="form-textarea">{{ old('description', $product->description) }}</textarea>
             </div>
-            <div class="mb-4">
-                <label for = 'image' class="block text-gray-700 font-bold mb-2">Zdjęcie</label>
-                <input type = 'file' name = 'image' accept="image/*"
-                    class="border border-gray-300 rounded px-3 py-2 w-full focus:outline-none focus:border-blue-500">
+            <div class="form-group">
+                <label class="form-label">Zdjęcie</label>
+                <input type="file" name="image" accept="image/*" class="form-input">
             </div>
-            <button type="submit" class="bg-blue-500 text-white px-4 py-2 mt-4 rounded shadow hover:bg-blue-600">Zapisz
-                zmiany</button>
+            <button type="submit" class="btn btn--blue">Zapisz zmiany</button>
         </form>
     </div>
 @endsection

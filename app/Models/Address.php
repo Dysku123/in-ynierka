@@ -16,6 +16,8 @@ class Address extends Model
         'surname',
         'phone',
         'street',
+        'house_number',
+        'apartment_number',
         'postal_code',
         'city',
         'is_default'

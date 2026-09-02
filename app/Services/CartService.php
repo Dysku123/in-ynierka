@@ -25,12 +25,16 @@ class CartService
 
         if ($cartItem) {
             $cartItem->increment('quantity', $quantity);
-        } else {
+            return;
+        }
+        try {
             CartItem::create(array_merge($conditions, [
-                'user_id' => $userId, // Ensure user_id is set
-                'session_id' => $userId ? null : $sessionId, // Clear session_id for logged-in users
+                'user_id' => $userId,
+                'session_id' => $userId ? null : $sessionId,
                 'quantity' => $quantity,
             ]));
+        } catch (\Illuminate\Database\UniqueConstraintViolationException $e) {
+            CartItem::where($conditions)->first()->increment('quantity', $quantity);
         }
     }
 
@@ -44,7 +48,7 @@ class CartService
         $total = 0;
         foreach ($cartItems as $item) {
             if (!$item->product) {
-                continue;//sprawdzamy, czy w ogóle jest
+                continue; //sprawdzamy, czy w ogóle jest
             }
             $lineTotal = (int) round($item->quantity * $item->portion_weight * $item->product->price / 100);
             $total += $lineTotal;
