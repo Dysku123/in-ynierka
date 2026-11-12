@@ -6,7 +6,8 @@
 
         <div class="form-group">
             <x-input-label for="email" :value="__('Email')" />
-            <x-text-input id="email" type="email" name="email" :value="old('email')" required autofocus autocomplete="username" />
+            <x-text-input id="email" type="email" name="email" :value="old('email')" required autofocus
+                autocomplete="username" />
             <x-input-error :messages="$errors->get('email')" />
         </div>
 
@@ -28,4 +29,9 @@
             <x-primary-button>{{ __('Log in') }}</x-primary-button>
         </div>
     </form>
+    <div class="auth-footer">
+        <p class="muted">Nie masz jeszcze konta? <a href="{{ route('register') }}">Zarejestruj się!</a></p>
+        <a href="{{ route('home') }}" class="muted">← Powrót do sklepu</a>
+    </div>
+
 </x-guest-layout>

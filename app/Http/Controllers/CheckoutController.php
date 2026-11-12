@@ -7,6 +7,8 @@ use App\Services\CartService;
 use App\Enums\DeliveryMethod;
 use App\Enums\PaymentMethod;
 use App\Services\OrderService;
+use App\Models\Order;
+use App\Services\PaymentService;
 
 class CheckoutController extends Controller
 {
@@ -95,7 +97,7 @@ class CheckoutController extends Controller
         ]);
     }
 
-    public function placeOrder(Request $request, OrderService $orderService)
+    public function placeOrder(Request $request, OrderService $orderService, PaymentService $paymentService)
     {
         $checkout = session('checkout', []);
         if (empty($checkout['address']) || empty($checkout['delivery_method']) || empty($checkout['payment_method'])) {
@@ -127,11 +129,37 @@ class CheckoutController extends Controller
         }
 
         session()->forget('checkout');
+        // Płatność online → do hostowanej strony Stripe
+        if ($checkout['payment_method'] === PaymentMethod::Online->value) {
+            return redirect()->away($paymentService->createCheckoutSession($order));
+        }
 
         if ($userId) {
             return redirect()->route('orders.index')->with('success', 'Zamówienie złożone! ID: ' . $order->id);
         }
         $url = \Illuminate\Support\Facades\URL::signedRoute('order.guest_show', ['uuid' => $order->uuid]);
         return redirect()->to($url)->with('success', 'Zamówienie złożone pomyślnie!');
+    }
+
+    public function success(Order $order)
+    {
+        return view('checkout.success', compact('order'));
+    }
+
+    public function cancel(Order $order)
+    {
+        return view('checkout.cancel', compact('order'));
+    }
+
+    public function payAgain(Order $order, PaymentService $paymentService)
+    {
+        // tylko nieopłacone zamówienia online można dopłacić
+        abort_unless(
+            $order->status === \App\Enums\OrderStatus::Pending
+                && $order->payment_method === PaymentMethod::Online,
+            403
+        );
+
+        return redirect()->away($paymentService->createCheckoutSession($order));
     }
 }

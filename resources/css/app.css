@@ -564,6 +564,16 @@ body.app-body {
     gap: 1rem;
     margin-top: 1rem;
 }
+.auth-footer {
+    margin-top: 1.5rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--gray-border);
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
 
 .saved-addresses {
     display: grid;
