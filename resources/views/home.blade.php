@@ -20,7 +20,7 @@
             @foreach ($categories as $category)
                 <div class="category-card">
                     <h2 class="category-card__title">{{ $category->name }}</h2>
-                    <a href="{{ route('category.show', $category->slug) }}" class="category-card__link">Zobacz produkty &rarr;</a>
+                    <a href="{{ route('shop.index', ['category' => $category->slug]) }}" class="category-card__link">Zobacz produkty &rarr;</a>
                 </div>
             @endforeach
         </div>
@@ -54,6 +54,7 @@
                     <a href="{{ route('admin.products.index') }}" class="btn btn--blue">Zarządzaj produktami</a>
                     <a href="{{ route('admin.products.create') }}" class="btn btn--green">+ Dodaj nowy ser</a>
                     <a href="{{ route('admin.order.index') }}" class="btn btn--dark">Zamówienia</a>
+                    <a href="{{ route('admin.discounts.index') }}" class="btn btn--yellow">Kody rabatowe 🎟️</a>
                 </div>
             </div>
         @endif

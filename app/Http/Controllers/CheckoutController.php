@@ -86,13 +86,20 @@ class CheckoutController extends Controller
         $userId = $request->user()?->id;
         $sessionId = session()->getId();
         $cartItems = $cartService->getCartItems($userId, $sessionId);
-        $totalPrice = $cartService->calculateTotal($cartItems);
+        $subtotal = $cartService->calculateTotal($cartItems);
+
+        $discount = \App\Models\DiscountCode::fromSession($subtotal);
+        $discountAmount = $discount?->discountFor($subtotal) ?? 0;
+        $totalPrice = $subtotal - $discountAmount;
 
         return view('checkout.summary', [
             'address'    => $checkout['address'],
             'delivery'   => DeliveryMethod::from($checkout['delivery_method']),
             'payment'    => PaymentMethod::from($checkout['payment_method']),
             'cartItems'  => $cartItems,
+            'subtotal'   => $subtotal,
+            'discount'   => $discount,
+            'discountAmount' => $discountAmount,
             'totalPrice' => $totalPrice,
         ]);
     }
@@ -129,6 +136,7 @@ class CheckoutController extends Controller
         }
 
         session()->forget('checkout');
+        session()->forget('discount_code');
         // Płatność online → do hostowanej strony Stripe
         if ($checkout['payment_method'] === PaymentMethod::Online->value) {
             return redirect()->away($paymentService->createCheckoutSession($order));

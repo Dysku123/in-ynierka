@@ -14,6 +14,8 @@ class Order extends Model
         'user_id',
         'email',
         'total_price',
+        'discount_code',
+        'discount_amount',
         'status',
         'uuid',
         'shipping_name',

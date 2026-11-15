@@ -8,6 +8,12 @@ use App\Http\Controllers\OrderController;
 use App\Http\Controllers\Admin\OrderController as AdminOrderController; // wrzucamy alias, bo wywala błąd
 use App\Http\Controllers\CheckoutController;
 use App\Http\Controllers\AddressController;
+use App\Http\Controllers\WebhookController;
+use App\Http\Controllers\Admin\AdminDashboardController;
+use App\Http\Controllers\ShopController;
+use App\Http\Controllers\Auth\GoogleController;
+
+
 
 
 Route::get('/', [HomeController::class, 'index'])->name('home');
@@ -17,7 +23,17 @@ Route::get('/kategoria/{slug}', [HomeController::class, 'show'])->name('category
 Route::get('/produkt/{slug}', [HomeController::class, 'product'])->name('product.show');
 Route::post('/koszyk/dodaj', [CartController::class, 'add'])->name('cart.add');
 Route::get('/koszyk', [CartController::class, 'index'])->name('cart.show');
-Route::delete('/koszyk/{id}', [CartController::class, 'destroy'])->name('cart.destroy');
+Route::delete('/koszyk/{id}', [CartController::class, 'destroy'])->name('cart.destroy')->whereNumber('id');
+Route::post('/koszyk/kod', [CartController::class, 'applyDiscount'])->name('cart.discount.apply');
+Route::delete('/koszyk/kod', [CartController::class, 'removeDiscount'])->name('cart.discount.remove');
+Route::post('/stripe/webhook', [WebhookController::class, 'handle'])->name('stripe.webhook');
+Route::get('/sklep', [ShopController::class, 'index'])->name('shop.index');
+// Logowanie przez Google (OAuth)
+Route::get('/auth/google/redirect', [GoogleController::class, 'redirect'])->name('google.redirect');
+Route::get('/auth/google/callback', [GoogleController::class, 'callback'])->name('google.callback');
+
+
+
 
 //Trasy chronione dla zalogowanych (Profil)
 Route::middleware('auth')->group(function () {
@@ -39,13 +55,12 @@ Route::middleware('signed')->group(function () { // weryfikuj hash w url dla nie
 
 //Panel Admina (tylko dla zalogowanych ADMINÓW)
 Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(function () { //sprawdzić dlaczego dokłądnie admin
-    Route::get('/admin', function () {
-        return "Witaj w tajnym panelu admina! 🧀";
-    })->name('dashboard');
+    Route::get('/', [AdminDashboardController::class, 'index'])->name('dashboard');
     Route::patch('/order/{order}/status', [AdminOrderController::class, 'updateStatus'])->name('order.updateStatus');
     Route::get('/order/{order}', [AdminOrderController::class, 'show'])->name('order.show');
     Route::get('/orders', [AdminOrderController::class, 'index'])->name('order.index');
     Route::resource('products', \App\Http\Controllers\Admin\ProductController::class); // tutaj zaciąga mi wszystko na raz do 1, bo taki standard laravela
+    Route::resource('discounts', \App\Http\Controllers\Admin\DiscountCodeController::class)->except(['show']);
 });
 
 Route::prefix('zamowienie/kasa')->name('checkout.')->group(function () {

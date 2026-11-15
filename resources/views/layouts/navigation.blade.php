@@ -3,7 +3,7 @@
         <div class="navbar__left">
             <a href="{{ route('home') }}" class="navbar__brand">Gouda &amp; Spółka 🧀</a>
             <div class="navbar__links">
-                <a href="{{ route('home') }}" class="navbar__link">Sklep</a>
+                <a href="{{ route('shop.index') }}" class="navbar__link">Sklep</a>
                 <a href="{{ route('cart.show') }}" class="navbar__link">Koszyk 🛒</a>
             </div>
         </div>

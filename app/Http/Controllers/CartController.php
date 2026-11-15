@@ -42,10 +42,15 @@ class CartController extends Controller
         $sessionId = session()->getId();
 
         $cartItems = $cartService->getCartItems($userId, $sessionId);
-        $totalPrice = $cartService->calculateTotal($cartItems);
+        $subtotal = $cartService->calculateTotal($cartItems);
 
-        return view('cart', compact('cartItems', 'totalPrice'));
+        $discount = \App\Models\DiscountCode::fromSession($subtotal);
+        $discountAmount = $discount?->discountFor($subtotal) ?? 0;
+        $totalPrice = $subtotal - $discountAmount;
+
+        return view('cart', compact('cartItems', 'subtotal', 'discount', 'discountAmount', 'totalPrice'));
     }
+
 
     public function destroy(int $id, Request $request, CartService $cartService)
     {
@@ -55,5 +60,38 @@ class CartController extends Controller
         $cartService->removeFromCart($id, $userId, $sessionId);
 
         return back()->with('success', 'Produkt usunięty z koszyka!');
+    }
+
+    public function applyDiscount(Request $request, CartService $cartService)
+    {
+        $request->validate([
+            'code' => 'required|string|max:50'
+        ]);
+        $userId = $request->user()?->id;
+        $sessionId = session()->getId();
+        $cartItems = $cartService->getCartItems($userId, $sessionId);
+
+        if ($cartItems->isEmpty()) {
+            return back()->with(['error' => 'Twój koszyk jest pusty.']);
+        }
+        $subtotal = $cartService->calculateTotal($cartItems);
+        //zmieniamy, zeby wszycstko czytalo
+        $input = strtoupper(trim($request->input('code')));
+        $code = \App\Models\DiscountCode::where('code', $input)->first();
+        if (!$code) {
+            return back()->with('error', 'Nie ma takiego kodu rabatowego.');
+        }
+        $problem = $code->problemFor($subtotal);
+        if ($problem !== null) {
+            return back()->with('error', $problem);
+        }
+
+        session(['discount_code' => $code->code]);
+        return back()->with('success', 'Kod rabatowy zastosowany!');
+    }
+    public function removeDiscount(Request $request)
+    {
+        session()->forget('discount_code');
+        return back()->with('success', 'Kod rabatowy został usunięty.');
     }
 }

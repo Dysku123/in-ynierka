@@ -667,3 +667,169 @@ body.app-body {
         display: none;
     }
 }
+
+.stat-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.stat-tile {
+    background: #fff;
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    border: 1px solid var(--gray-border);
+    padding: 1.25rem;
+}
+
+.stat-tile__value {
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: var(--yellow-dark);
+}
+
+.stat-tile__label {
+    font-size: 0.85rem;
+    color: var(--gray-text);
+    margin-top: 0.25rem;
+}
+
+@media (max-width: 768px) {
+    .stat-grid {
+        grid-template-columns: 1fr 1fr;
+    }
+}
+
+.shop-filters {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+
+.shop-filters .form-input,
+.shop-filters .form-select {
+    width: auto;
+}
+
+.pagination {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.375rem;
+    align-items: center;
+    justify-content: center;
+    margin-top: 2rem;
+}
+
+.pagination__item {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 2.25rem;
+    height: 2.25rem;
+    padding: 0 0.5rem;
+    border-radius: var(--radius);
+    border: 1px solid var(--gray-border);
+    background: #fff;
+    color: var(--dark);
+    font-size: 0.875rem;
+    font-weight: 600;
+    text-decoration: none;
+    transition: background-color 0.15s ease, border-color 0.15s ease;
+}
+
+a.pagination__item:hover {
+    background: var(--yellow-light);
+    border-color: var(--yellow);
+}
+
+.pagination__item--active {
+    background: var(--yellow);
+    border-color: var(--yellow);
+    color: #fff;
+    cursor: default;
+}
+
+.pagination__item--disabled {
+    color: #9ca3af;
+    background: var(--gray-bg);
+    cursor: default;
+}
+.auth-divider {
+    display: flex;
+    align-items: center;
+    text-align: center;
+    margin: 1.25rem 0;
+    color: #9ca3af;
+    font-size: 0.85rem;
+}
+
+.auth-divider::before,
+.auth-divider::after {
+    content: "";
+    flex: 1;
+    height: 1px;
+    background: var(--gray-border);
+}
+
+.auth-divider span {
+    padding: 0 0.75rem;
+}
+
+.btn--google {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.6rem;
+    background: #fff;
+    color: #374151;
+    border: 1px solid #d1d5db;
+}
+
+.btn--google:hover {
+    background: var(--gray-bg);
+}
+
+/* ===== Koszyk: kod rabatowy + podsumowanie ===== */
+.cart-discount__form {
+    display: flex;
+    gap: 0.5rem;
+    max-width: 22rem;
+}
+
+.cart-discount__applied {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 0.75rem 1rem;
+    background: var(--yellow-light);
+    border-radius: var(--radius);
+    max-width: 22rem;
+}
+
+.cart-summary {
+    max-width: 22rem;
+    margin-left: auto;
+}
+
+.cart-summary__row {
+    display: flex;
+    justify-content: space-between;
+    padding: 0.35rem 0;
+    color: var(--gray-text);
+}
+
+.cart-summary__row--discount {
+    color: var(--red);
+}
+
+.cart-summary__row--total {
+    border-top: 1px solid var(--gray-border);
+    margin-top: 0.5rem;
+    padding-top: 0.75rem;
+    font-size: 1.15rem;
+    font-weight: 700;
+    color: var(--dark);
+}

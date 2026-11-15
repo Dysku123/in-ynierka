@@ -21,12 +21,18 @@ class OrderService
         if ($cart->isEmpty()) {
             throw new Exception('Koszyk jest pusty.');
         }
-        $totalPrice = $this->cartService->calculateTotal($cart);
-        $order = DB::transaction(function () use ($userId, $cart, $totalPrice, $email, $shipping) {
+        $subtotal = $this->cartService->calculateTotal($cart);
+        $discount = \App\Models\DiscountCode::fromSession($subtotal);
+        $discountAmount = $discount?->discountFor($subtotal) ?? 0;
+        $totalPrice = $subtotal - $discountAmount;
+
+        $order = DB::transaction(function () use ($userId, $cart, $totalPrice, $discount, $discountAmount, $email, $shipping) {
             $order = Order::create(array_merge([
                 'user_id' => $userId,
                 'email' => $email,
                 'total_price' => $totalPrice,
+                'discount_code' => $discount?->code,
+                'discount_amount' => $discountAmount,
                 'status' => OrderStatus::Pending,
                 'uuid' => Str::uuid()->toString(),
             ], $shipping));
@@ -59,6 +65,10 @@ class OrderService
 
             OrderItem::insert($orderItemsData);
             $this->cartService->clearCartByIds($cartItemIds);
+
+            if ($discount) {
+                $discount->increment('used_count');
+            }
 
             return $order;
         });

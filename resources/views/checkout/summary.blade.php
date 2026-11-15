@@ -43,7 +43,22 @@
                     @endforeach
                 </tbody>
             </table>
-            <div class="text-right price-total mt-4">Do zapłaty: {{ number_format($totalPrice / 100, 2, ',', ' ') }} zł</div>
+            <div class="cart-summary mt-4">
+                <div class="cart-summary__row">
+                    <span>Wartość koszyka:</span>
+                    <span>{{ number_format($subtotal / 100, 2, ',', ' ') }} zł</span>
+                </div>
+                @if ($discountAmount > 0)
+                    <div class="cart-summary__row cart-summary__row--discount">
+                        <span>Rabat ({{ $discount->code }}):</span>
+                        <span>−{{ number_format($discountAmount / 100, 2, ',', ' ') }} zł</span>
+                    </div>
+                @endif
+                <div class="cart-summary__row cart-summary__row--total">
+                    <span>Do zapłaty:</span>
+                    <span>{{ number_format($totalPrice / 100, 2, ',', ' ') }} zł</span>
+                </div>
+            </div>
         </div>
 
         <form method="POST" action="{{ route('checkout.place') }}">
