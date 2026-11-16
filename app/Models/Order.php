@@ -27,7 +27,9 @@ class Order extends Model
         'shipping_postal_code',
         'shipping_city',
         'delivery_method',
-        'payment_method'
+        'payment_method',
+        'shipping_cost',
+
     ];
 
     protected $casts = [

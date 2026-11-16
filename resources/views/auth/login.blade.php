@@ -1,5 +1,8 @@
 <x-guest-layout>
     <x-auth-session-status :status="session('status')" />
+    @if (session('error'))
+        <div class="alert alert--error">{{ session('error') }}</div>
+    @endif
 
     <form method="POST" action="{{ route('login') }}" class="form">
         @csrf

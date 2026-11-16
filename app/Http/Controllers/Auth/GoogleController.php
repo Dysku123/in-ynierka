@@ -37,6 +37,7 @@ class GoogleController extends Controller
                     'email' => $googleUser->getEmail(),
                     'google_id' => $googleUser->getId(),
                 ]);
+                $user->forceFill(['email_verified_at' => now()])->save();
             }
         }
 

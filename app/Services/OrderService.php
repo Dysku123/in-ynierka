@@ -24,9 +24,11 @@ class OrderService
         $subtotal = $this->cartService->calculateTotal($cart);
         $discount = \App\Models\DiscountCode::fromSession($subtotal);
         $discountAmount = $discount?->discountFor($subtotal) ?? 0;
-        $totalPrice = $subtotal - $discountAmount;
+        $codFee = (($shipping['payment_method'] ?? null) === \App\Enums\PaymentMethod::Cod->value && ($shipping['delivery_method'] ?? null) === \App\Enums\DeliveryMethod::Courier->value) ? config('shop.cod_fee') : 0;
+        $shippingCost = \App\Enums\DeliveryMethod::tryFrom($shipping['delivery_method'] ?? '')?->cost() ?? 0;
+        $totalPrice = $subtotal - $discountAmount + $codFee + $shippingCost;
 
-        $order = DB::transaction(function () use ($userId, $cart, $totalPrice, $discount, $discountAmount, $email, $shipping) {
+        $order = DB::transaction(function () use ($userId, $cart, $totalPrice, $discount, $discountAmount, $email, $shipping, $shippingCost) {
             $order = Order::create(array_merge([
                 'user_id' => $userId,
                 'email' => $email,
@@ -35,6 +37,7 @@ class OrderService
                 'discount_amount' => $discountAmount,
                 'status' => OrderStatus::Pending,
                 'uuid' => Str::uuid()->toString(),
+                'shipping_cost' => $shippingCost
             ], $shipping));
 
             $orderItemsData = [];

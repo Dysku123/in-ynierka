@@ -4,11 +4,18 @@
     <div class="container-narrow">
         <h1 class="section-title">Krok 3 z 3 — Podsumowanie zamówienia</h1>
 
+        @if (session('error'))
+            <div class="alert alert--error">{{ session('error') }}</div>
+        @endif
+
         <div class="grid grid--2 mb-6">
             <div class="summary-box">
                 <h2 class="form-label">Dane dostawy</h2>
                 <p>{{ $address['name'] }} {{ $address['surname'] }}</p>
-                <p>{{ $address['street'] }} {{ $address['house_number'] }}@if (!empty($address['apartment_number']))/{{ $address['apartment_number'] }}@endif</p>
+                <p>{{ $address['street'] }} {{ $address['house_number'] }}@if (!empty($address['apartment_number']))
+                        /{{ $address['apartment_number'] }}
+                    @endif
+                </p>
                 <p>{{ $address['postal_code'] }} {{ $address['city'] }}</p>
                 <p>tel. {{ $address['phone'] }}</p>
                 @isset($address['email'])
@@ -52,6 +59,17 @@
                     <div class="cart-summary__row cart-summary__row--discount">
                         <span>Rabat ({{ $discount->code }}):</span>
                         <span>−{{ number_format($discountAmount / 100, 2, ',', ' ') }} zł</span>
+                    </div>
+                @endif
+                <div class="cart-summary__row">
+                    <span>Dostawa ({{ $delivery->label() }}):</span>
+                    <span>{{ $shippingCost > 0 ? '+' . number_format($shippingCost / 100, 2, ',', ' ') . ' zł' : 'gratis' }}</span>
+                </div>
+
+                @if ($codFee > 0)
+                    <div class="cart-summary__row">
+                        <span>Dopłata za pobranie:</span>
+                        <span>+{{ number_format($codFee / 100, 2, ',', ' ') }} zł</span>
                     </div>
                 @endif
                 <div class="cart-summary__row cart-summary__row--total">

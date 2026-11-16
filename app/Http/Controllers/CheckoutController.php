@@ -47,6 +47,7 @@ class CheckoutController extends Controller
         if ($request->user() && $request->boolean('save_address')) {
             $request->user()->addresses()->create($validated);
         }
+
         session(['checkout.address' => $validated]);
         return redirect()->route('checkout.shipping');
     }
@@ -70,6 +71,13 @@ class CheckoutController extends Controller
             'delivery_method' => ['required', \Illuminate\Validation\Rule::enum(DeliveryMethod::class)],
             'payment_method' => ['required', \Illuminate\Validation\Rule::enum(PaymentMethod::class)],
         ]);
+
+        if ($validated['payment_method'] === PaymentMethod::Cod->value && $validated['delivery_method'] === DeliveryMethod::Inpost->value) {
+            return back()->withErrors([
+                'payment_method' => 'Płatność za pobraniem nie jest dostępna dla paczkomatu InPost. Wybierz kuriera lub odbiór osobisty.',
+            ])->withInput();
+        }
+
         session([
             'checkout.delivery_method' => $validated['delivery_method'],
             'checkout.payment_method' => $validated['payment_method']
@@ -90,7 +98,11 @@ class CheckoutController extends Controller
 
         $discount = \App\Models\DiscountCode::fromSession($subtotal);
         $discountAmount = $discount?->discountFor($subtotal) ?? 0;
-        $totalPrice = $subtotal - $discountAmount;
+        $codFee = ($checkout['payment_method'] === PaymentMethod::Cod->value && $checkout['delivery_method'] === DeliveryMethod::Courier->value) ? config('shop.cod_fee') : 0;
+        $shippingCost = DeliveryMethod::from($checkout['delivery_method'])->cost();
+        $totalPrice = $subtotal - $discountAmount + $codFee + $shippingCost;
+
+
 
         return view('checkout.summary', [
             'address'    => $checkout['address'],
@@ -101,18 +113,38 @@ class CheckoutController extends Controller
             'discount'   => $discount,
             'discountAmount' => $discountAmount,
             'totalPrice' => $totalPrice,
+            'codFee' => $codFee,
+            'shippingCost' => $shippingCost,
         ]);
     }
 
-    public function placeOrder(Request $request, OrderService $orderService, PaymentService $paymentService)
+    public function placeOrder(Request $request, OrderService $orderService, PaymentService $paymentService, CartService $cartService)
     {
         $checkout = session('checkout', []);
         if (empty($checkout['address']) || empty($checkout['delivery_method']) || empty($checkout['payment_method'])) {
             return redirect()->route('checkout.address');
         }
+        // Defense-in-depth: COD + paczkomat nie może przejść nawet gdyby ktoś ominął krok dostawy
+        if ($checkout['payment_method'] === PaymentMethod::Cod->value && $checkout['delivery_method'] === DeliveryMethod::Inpost->value) {
+            return redirect()->route('checkout.shipping')->withErrors([
+                'payment_method' => 'Płatność za pobraniem nie jest dostępna dla paczkomatu InPost. Wybierz inną metodę.',
+            ]);
+        }
+
 
         $userId = $request->user()?->id;
         $sessionId = session()->getId();
+        // #4: jeśli user miał kod rabatowy, a przestał już łapać (wygasł / wyczerpany / koszyk poniżej progu)
+        // — nie obciążaj po cichu pełną kwotą; wróć do podsumowania z informacją.
+        if (session('discount_code')) {
+            $subtotal = $cartService->calculateTotal($cartService->getCartItems($userId, $sessionId));
+            if (!\App\Models\DiscountCode::fromSession($subtotal)) {
+                session()->forget('discount_code');
+                return redirect()->route('checkout.summary')
+                    ->with('error', 'Kod rabatowy przestał obowiązywać i został usunięty. Sprawdź kwotę przed potwierdzeniem zamówienia.');
+            }
+        }
+
         $address = $checkout['address'];
         $email = $request->user()?->email ?? ($address['email'] ?? null);
 
@@ -137,16 +169,20 @@ class CheckoutController extends Controller
 
         session()->forget('checkout');
         session()->forget('discount_code');
+
+        // Zamówienie "za darmo" (np. rabat 100%) — nic do zapłaty.
+        // Stripe odrzuciłby kwotę 0, więc oznaczamy jako opłacone i pomijamy płatność.
+        if ($order->total_price <= 0) {
+            $order->update(['status' => \App\Enums\OrderStatus::Paid]);
+            return redirect()->route('checkout.success', ['order' => $order->id]);
+        }
+
         // Płatność online → do hostowanej strony Stripe
         if ($checkout['payment_method'] === PaymentMethod::Online->value) {
             return redirect()->away($paymentService->createCheckoutSession($order));
         }
-
-        if ($userId) {
-            return redirect()->route('orders.index')->with('success', 'Zamówienie złożone! ID: ' . $order->id);
-        }
-        $url = \Illuminate\Support\Facades\URL::signedRoute('order.guest_show', ['uuid' => $order->uuid]);
-        return redirect()->to($url)->with('success', 'Zamówienie złożone pomyślnie!');
+        // COD / przelew tradycyjny → strona potwierdzenia z instrukcjami
+        return redirect()->route('checkout.success', ['order' => $order->id]);
     }
 
     public function success(Order $order)

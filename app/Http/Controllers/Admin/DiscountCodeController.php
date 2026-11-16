@@ -63,6 +63,9 @@ class DiscountCodeController extends Controller
         // normalizacja kodu (SER10, nie "ser10 ") + checkbox na bool
         $validated['code'] = strtoupper(trim($validated['code']));
         $validated['is_active'] = $request->boolean('is_active');
+        if (!empty($validated['expires_at'])) {
+            $validated['expires_at'] = \Carbon\Carbon::parse($validated['expires_at'])->endOfDay();// robi, ze kod jest do konca dnia, nie do 00:00 poczatku dnia
+        }
 
         return $validated;
     }
