@@ -26,9 +26,26 @@
             <div class="summary-box">
                 <h2 class="form-label">Dostawa i płatność</h2>
                 <p><span class="muted">Dostawa:</span> {{ $delivery->label() }}</p>
+                @if ($delivery === \App\Enums\DeliveryMethod::Inpost && $paczkomatPoint)
+                    <p><span class="muted">Paczkomat:</span>
+                        {{ config('shop.paczkomaty')[$paczkomatPoint] ?? $paczkomatPoint }}</p>
+                @endif
                 <p><span class="muted">Płatność:</span> {{ $payment->label() }}</p>
             </div>
         </div>
+        @if (!empty($address['invoice_company']))
+            <div class="summary-box mb-6">
+                <h2 class="form-label">Dane do faktury</h2>
+                <p><strong>{{ $address['invoice_company'] }}</strong></p>
+                <p>NIP: {{ $address['invoice_nip'] }}</p>
+                <p>{{ $address['invoice_street'] }} {{ $address['invoice_house_number'] }}@if (!empty($address['invoice_apartment_number']))
+                        /{{ $address['invoice_apartment_number'] }}
+                    @endif
+                </p>
+                <p>{{ $address['invoice_postal_code'] }} {{ $address['invoice_city'] }}</p>
+            </div>
+        @endif
+
 
         <div class="summary-box">
             <h2 class="form-label">Twoje produkty</h2>

@@ -19,7 +19,9 @@ Dostawa: {{ $order->shipping_cost > 0 ? number_format($order->shipping_cost / 10
 
 **Do zapłaty: {{ number_format($order->total_price / 100, 2, ',', ' ') }} zł**
 
-Status: {{ $order->status->label() }}
+Status realizacji: {{ $order->status->label() }}
+
+Status płatności: {{ $order->payment_status->label() }}
 
 @if ($order->shipping_name)
 ## Adres dostawy
@@ -30,7 +32,18 @@ Status: {{ $order->status->label() }}
 tel. {{ $order->shipping_phone }}
 
 Metoda dostawy: **{{ $order->delivery_method?->label() ?? '—' }}**
+@if ($order->delivery_method === \App\Enums\DeliveryMethod::Inpost && $order->paczkomat_point)
+Paczkomat: **{{ config('shop.paczkomaty')[$order->paczkomat_point] ?? $order->paczkomat_point }}**
+@endif
 Metoda płatności: **{{ $order->payment_method?->label() ?? '—' }}**
+@endif
+@if ($order->invoice_company)
+## Dane do faktury
+
+**{{ $order->invoice_company }}**
+NIP: {{ $order->invoice_nip }}
+{{ $order->invoice_street }} {{ $order->invoice_house_number }}@if ($order->invoice_apartment_number)/{{ $order->invoice_apartment_number }}@endif
+{{ $order->invoice_postal_code }} {{ $order->invoice_city }}
 @endif
 
 @if ($order->payment_method?->value === 'transfer')

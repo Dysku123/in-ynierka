@@ -39,7 +39,7 @@
                         <tr>
                             <td><a href="{{ route('admin.order.show', $order) }}">#{{ $order->id }}</a></td>
                             <td>{{ $order->user?->name ?? ($order->shipping_name ?? 'Gość') }}</td>
-                            <td>{{ $order->status->label() }}</td>
+                            <td>{{ $order->status->label() }}<br><span class="muted" style="font-size:0.85rem;">{{ $order->payment_status->label() }}</span></td>
                             <td>{{ number_format($order->total_price / 100, 2, ',', ' ') }} zł</td>
                         </tr>
                     @empty

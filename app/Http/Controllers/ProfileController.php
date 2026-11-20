@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Redirect;
 use Illuminate\View\View;
 use App\Services\OrderService;
+use Illuminate\Validation\Rule;
 
 class ProfileController extends Controller
 {
@@ -41,14 +42,22 @@ class ProfileController extends Controller
     /**
      * Delete the user's account.
      */
-    public function destroy(Request $request, OrderService $orderService): RedirectResponse
+     public function destroy(Request $request, OrderService $orderService): RedirectResponse
     {
-        $request->validateWithBag('userDeletion', [
-            'password' => ['required', 'current_password'],
-        ]);
-
         $user = $request->user();
 
+        if ($user->password) {
+            $request->validateWithBag('userDeletion', [
+                'password' => ['required', 'current_password'],
+            ]);
+        } else {
+            $request->validateWithBag('userDeletion', [
+                'confirm_email' => ['required', Rule::in([$user->email])],
+            ], [
+                'confirm_email.required' => 'Wpisz swój adres e-mail, aby potwierdzić usunięcie konta.',
+                'confirm_email.in' => 'To nie jest adres e-mail Twojego konta.',
+            ]);
+        }
         $orderService->anonymizeUserOrders($user->id);
 
         Auth::logout();

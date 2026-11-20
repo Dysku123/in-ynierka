@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use App\Services\OrderService;
 use App\Enums\OrderStatus;
 use App\Models\Order;
+use App\Enums\PaymentStatus;
 
 class OrderController extends Controller
 {
@@ -15,10 +16,12 @@ class OrderController extends Controller
     {
         $validated = $request->validate([
             'status' => ['required', \Illuminate\Validation\Rule::enum(OrderStatus::class)], // spprawdzamy czy nasz status jest zdefinowany w naszej liscie enumów
+            'payment_status'=>['required', \Illuminate\Validation\Rule::enum(PaymentStatus::class)],
         ]);
         $status = OrderStatus::from($validated['status']);
 
         $orderService->changeStatus($order, $status);
+        $order->update(['payment_status' =>$validated['payment_status']]);
 
         return redirect()->back()->with('success', 'Status zamówienia został zaktualizowany!');
     }

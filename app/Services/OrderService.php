@@ -9,6 +9,7 @@ use App\Enums\OrderStatus;
 use Exception;
 use Illuminate\Support\Str;
 use App\Models\Product;
+use App\Enums\PaymentStatus;
 
 class OrderService
 {
@@ -35,7 +36,8 @@ class OrderService
                 'total_price' => $totalPrice,
                 'discount_code' => $discount?->code,
                 'discount_amount' => $discountAmount,
-                'status' => OrderStatus::Pending,
+                'status' => OrderStatus::New,
+                'payment_status' => PaymentStatus::Unpaid,
                 'uuid' => Str::uuid()->toString(),
                 'shipping_cost' => $shippingCost
             ], $shipping));
@@ -104,8 +106,18 @@ class OrderService
             'shipping_surname' => 'użytkownik',
             'shipping_phone' => null,
             'shipping_street' => null,
+            'shipping_house_number' => null,
+            'shipping_apartment_number' => null,
             'shipping_postal_code' => null,
             'shipping_city' => null,
+            'paczkomat_point' => null,
+            'invoice_company' => null,
+            'invoice_nip' => null,
+            'invoice_street' => null,
+            'invoice_house_number' => null,
+            'invoice_apartment_number' => null,
+            'invoice_postal_code' => null,
+            'invoice_city' => null,
             'email' => 'anonim@usuniete.local',
         ]);
     }

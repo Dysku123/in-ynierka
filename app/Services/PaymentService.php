@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\Order;
 use Stripe\StripeClient;
+use Illuminate\Support\Facades\URL;
 
 class PaymentService{
     public function createCheckoutSession(Order $order):string
@@ -22,8 +23,8 @@ class PaymentService{
                 'quantity' => 1,
             ]],
             'metadata' => ['order_id' => $order->id],
-            'success_url' => route('checkout.success', ['order' =>$order->id]),
-            'cancel_url' => route('checkout.cancel', ['order' => $order->id]),
+            'success_url' => URL::signedRoute('checkout.success', ['order' => $order->id]),
+            'cancel_url' => URL::signedRoute('checkout.cancel', ['order' => $order->id]),
         ]);
 
         return $session->url;

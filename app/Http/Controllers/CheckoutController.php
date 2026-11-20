@@ -9,6 +9,10 @@ use App\Enums\PaymentMethod;
 use App\Services\OrderService;
 use App\Models\Order;
 use App\Services\PaymentService;
+use App\Enums\PaymentStatus;
+use App\Enums\OrderStatus;
+use Illuminate\Support\Facades\URL;
+
 
 class CheckoutController extends Controller
 {
@@ -39,6 +43,15 @@ class CheckoutController extends Controller
             'apartment_number' => ['nullable', 'string', 'max:20'],
             'postal_code' => ['required', 'string', 'regex:/^\d{2}-\d{3}$/'],
             'city' => ['required', 'string', 'max:255', 'regex:/^[\p{L}\s-]+$/u'],
+            'wants_invoice' => ['nullable', 'boolean'],
+            'invoice_company' => ['nullable', 'required_if:wants_invoice,1', 'string', 'max:255'],
+            'invoice_nip' => ['nullable', 'required_if:wants_invoice,1', 'regex:/^\d{10}$/'],
+            'invoice_street' => ['nullable', 'required_if:wants_invoice,1', 'string', 'max:255'],
+            'invoice_house_number' => ['nullable', 'required_if:wants_invoice,1', 'string', 'max:20'],
+            'invoice_apartment_number' => ['nullable', 'string', 'max:20'],
+            'invoice_postal_code' => ['nullable', 'required_if:wants_invoice,1', 'regex:/^\d{2}-\d{3}$/'],
+            'invoice_city' => ['nullable', 'required_if:wants_invoice,1', 'string', 'max:255', 'regex:/^[\p{L}\s-]+$/u'],
+
         ];
         if (!$request->user()) { //dla goscia sprawdzamy emial
             $rules['email'] = 'required|email';
@@ -70,7 +83,9 @@ class CheckoutController extends Controller
         $validated = $request->validate([
             'delivery_method' => ['required', \Illuminate\Validation\Rule::enum(DeliveryMethod::class)],
             'payment_method' => ['required', \Illuminate\Validation\Rule::enum(PaymentMethod::class)],
+            'paczkomat_point' => ['nullable', 'required_if:delivery_method,inpost', \Illuminate\Validation\Rule::in(array_keys(config('shop.paczkomaty')))],
         ]);
+
 
         if ($validated['payment_method'] === PaymentMethod::Cod->value && $validated['delivery_method'] === DeliveryMethod::Inpost->value) {
             return back()->withErrors([
@@ -80,8 +95,12 @@ class CheckoutController extends Controller
 
         session([
             'checkout.delivery_method' => $validated['delivery_method'],
-            'checkout.payment_method' => $validated['payment_method']
+            'checkout.payment_method' => $validated['payment_method'],
+            'checkout.paczkomat_point' => $validated['delivery_method'] === DeliveryMethod::Inpost->value
+                ? ($validated['paczkomat_point'] ?? null)
+                : null,
         ]);
+
         return redirect()->route('checkout.summary');
     }
     public function summary(Request $request, CartService $cartService)
@@ -115,6 +134,7 @@ class CheckoutController extends Controller
             'totalPrice' => $totalPrice,
             'codFee' => $codFee,
             'shippingCost' => $shippingCost,
+            'paczkomatPoint' => $checkout['paczkomat_point'] ?? null,
         ]);
     }
 
@@ -159,6 +179,15 @@ class CheckoutController extends Controller
             'shipping_city' => $address['city'] ?? null,
             'delivery_method' => $checkout['delivery_method'],
             'payment_method'  => $checkout['payment_method'],
+            'paczkomat_point' => $checkout['paczkomat_point'] ?? null,
+            'invoice_company' => $address['invoice_company'] ?? null,
+            'invoice_nip' => $address['invoice_nip'] ?? null,
+            'invoice_street' => $address['invoice_street'] ?? null,
+            'invoice_house_number' => $address['invoice_house_number'] ?? null,
+            'invoice_apartment_number' => $address['invoice_apartment_number'] ?? null,
+            'invoice_postal_code' => $address['invoice_postal_code'] ?? null,
+            'invoice_city' => $address['invoice_city'] ?? null,
+
         ];
 
         try {
@@ -173,8 +202,8 @@ class CheckoutController extends Controller
         // Zamówienie "za darmo" (np. rabat 100%) — nic do zapłaty.
         // Stripe odrzuciłby kwotę 0, więc oznaczamy jako opłacone i pomijamy płatność.
         if ($order->total_price <= 0) {
-            $order->update(['status' => \App\Enums\OrderStatus::Paid]);
-            return redirect()->route('checkout.success', ['order' => $order->id]);
+            $order->update(['payment_status' => PaymentStatus::Paid]);
+            return redirect()->to(URL::signedRoute('checkout.success', ['order' => $order->id]));
         }
 
         // Płatność online → do hostowanej strony Stripe
@@ -182,7 +211,7 @@ class CheckoutController extends Controller
             return redirect()->away($paymentService->createCheckoutSession($order));
         }
         // COD / przelew tradycyjny → strona potwierdzenia z instrukcjami
-        return redirect()->route('checkout.success', ['order' => $order->id]);
+        return redirect()->to(URL::signedRoute('checkout.success', ['order' => $order->id]));
     }
 
     public function success(Order $order)
@@ -199,10 +228,12 @@ class CheckoutController extends Controller
     {
         // tylko nieopłacone zamówienia online można dopłacić
         abort_unless(
-            $order->status === \App\Enums\OrderStatus::Pending
-                && $order->payment_method === PaymentMethod::Online,
+            $order->payment_status === PaymentStatus::Unpaid
+                && $order->payment_method === PaymentMethod::Online
+                && $order->status !== OrderStatus::Cancelled,
             403
         );
+
 
         return redirect()->away($paymentService->createCheckoutSession($order));
     }

@@ -833,3 +833,7 @@ a.pagination__item:hover {
     font-weight: 700;
     color: var(--dark);
 }
+.checkout-option--disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}

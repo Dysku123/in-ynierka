@@ -18,7 +18,7 @@
                     <tr>
                         <td>{{ $order->id }}</td>
                         <td>{{ $order->user?->name ?? 'Usunięto' }}</td>
-                        <td>{{ $order->status->label() }}</td>
+                        <td>{{ $order->status->label() }}<br><span class="muted" style="font-size:0.85rem;">{{ $order->payment_status->label() }}</span></td>
                         <td>{{ $order->created_at->format('Y-m-d H:i') }}</td>
                         <td>
                             <a href="{{ route('admin.order.show', $order->id) }}" class="btn btn--blue">Szczegóły</a>

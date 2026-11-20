@@ -3,8 +3,7 @@
 namespace App\Enums;
 
 enum OrderStatus: string {
-    case Pending = 'pending';
-    case Paid = 'paid';
+    case New = 'new';
     case Shipped = 'shipped';
     case Delivered = 'delivered';
     case Cancelled = 'cancelled';
@@ -12,8 +11,7 @@ enum OrderStatus: string {
     public function label(): string// polska nakładka na statusy
     {
         return match($this) {
-            self::Pending => 'Oczekujące',
-            self::Paid => 'Opłacone',
+            self::New => 'Nowe',
             self::Shipped => 'Wysłane',
             self::Delivered => 'Dostarczone',
             self::Cancelled => 'Anulowane',

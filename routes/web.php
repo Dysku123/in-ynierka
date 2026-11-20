@@ -70,9 +70,10 @@ Route::prefix('zamowienie/kasa')->name('checkout.')->group(function () {
     Route::post('/dostawa', [CheckoutController::class, 'storeShipping'])->name('shipping.store');
     Route::get('/podsumowanie', [CheckoutController::class, 'summary'])->name('summary');
     Route::post('/finalizuj', [CheckoutController::class, 'placeOrder'])->name('place');
-    Route::get('/sukces/{order}', [CheckoutController::class, 'success'])->name('success');
-    Route::get('/anulowano/{order}', [CheckoutController::class, 'cancel'])->name('cancel');
-    Route::post('/zaplac/{order}', [CheckoutController::class, 'payAgain'])->name('pay');
+    Route::get('/sukces/{order}', [CheckoutController::class, 'success'])->name('success')->middleware('signed');
+    Route::get('/anulowano/{order}', [CheckoutController::class, 'cancel'])->name('cancel')->middleware('signed');
+    Route::post('/zaplac/{order}', [CheckoutController::class, 'payAgain'])->name('pay')->middleware('signed');
+
 });
 
 require __DIR__ . '/auth.php';

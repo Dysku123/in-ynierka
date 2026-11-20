@@ -32,7 +32,9 @@ class CartController extends Controller
             ]);
         }
         $cartService->addToCart($userId, $sessionId, $productId, $portionWeight, $quantity);
-
+        if (!$userId) {
+            session(['guest_cart_session_id' => $sessionId]);
+        }
         return back()->with('success', 'Produkt dodany do koszyka! 🛒');
     }
     public function index(Request $request, CartService $cartService)

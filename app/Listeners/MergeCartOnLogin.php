@@ -11,9 +11,10 @@ class MergeCartOnLogin
 
     public function handle(Login $event): void
     {
-        $sessionId = session()->getId();
-        $userId = $event->user->id;
+        $guestSessionId = session()->pull('guest_cart_session_id');
 
-        $this->cartService->mergeSessionCart($userId, $sessionId);
+        if ($guestSessionId) {
+            $this->cartService->mergeSessionCart($event->user->id, $guestSessionId);
+        }
     }
 }
