@@ -16,9 +16,10 @@ return new class extends Migration
         Schema::table('orders', function (Blueprint $table) {
             $table->string('payment_status')->default('unpaid')->after('status');
         });
-        //zminaa oplacone na platnosac oplacone
+        // dawny status "paid" przenosimy do nowej kolumny payment_status
         DB::table('orders')->where('status', 'paid')->update(['payment_status'=>'paid']);
-        DB::table('orders')->whereIn('status', ['pending','paid'])->update(['status'=>'new']);//zmienaimy status na new dla wszystkich zamowien ktore sa pending lub paid
+        // zamówienia "pending" i "paid" dostają status realizacji "new"
+        DB::table('orders')->whereIn('status', ['pending','paid'])->update(['status'=>'new']);
     }
 
     /**

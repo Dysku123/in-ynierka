@@ -11,6 +11,7 @@ use App\Enums\PaymentStatus;
 
 class Order extends Model
 {
+    public const ANONYMIZED_EMAIL = 'anonim@usuniete.local';
     protected $fillable = [
         'user_id',
         'email',
@@ -49,7 +50,7 @@ class Order extends Model
         'payment_status' => PaymentStatus::class,
     ];
 
-    public function items() //bo to zwraca
+    public function items() // pozycje zamówienia (order_items)
     {
         return $this->hasMany(OrderItem::class);
     }
@@ -57,5 +58,9 @@ class Order extends Model
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
+    }
+    public function isAnonymized(): bool
+    {
+        return $this->email === self::ANONYMIZED_EMAIL;
     }
 }

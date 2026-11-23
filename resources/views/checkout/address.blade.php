@@ -96,7 +96,7 @@
                 </div>
             </div>
 
-            <div class="form-group" x-data="{ invoice: {{ old('wants_invoice') ? 'true' : 'false' }} }">
+            <div class="form-group" x-data="{ invoice: {{ old('wants_invoice', $address['wants_invoice'] ?? false) ? 'true' : 'false' }} }">
                 <label class="form-check">
                     <input type="checkbox" name="wants_invoice" value="1" x-model="invoice">
                     Chcę fakturę na firmę
@@ -105,43 +105,43 @@
                 <div x-show="invoice" x-cloak style="margin-top: 1rem;">
                     <div class="form-group">
                         <label class="form-label">Nazwa firmy</label>
-                        <input type="text" name="invoice_company" value="{{ old('invoice_company') }}"
+                        <input type="text" name="invoice_company" value="{{ old('invoice_company', $address['invoice_company'] ?? '') }}"
                             class="form-input">
                     </div>
 
                     <div class="form-group">
                         <label class="form-label">NIP</label>
-                        <input type="text" name="invoice_nip" value="{{ old('invoice_nip') }}" class="form-input">
+                        <input type="text" name="invoice_nip" value="{{ old('invoice_nip', $address['invoice_nip'] ?? '') }}" class="form-input">
                     </div>
 
                     <div class="form-group">
                         <label class="form-label">Ulica (adres faktury)</label>
-                        <input type="text" name="invoice_street" value="{{ old('invoice_street') }}"
+                        <input type="text" name="invoice_street" value="{{ old('invoice_street', $address['invoice_street'] ?? '') }}"
                             class="form-input">
                     </div>
 
                     <div class="form-grid-2">
                         <div class="form-group">
                             <label class="form-label">Nr domu</label>
-                            <input type="text" name="invoice_house_number" value="{{ old('invoice_house_number') }}"
+                            <input type="text" name="invoice_house_number" value="{{ old('invoice_house_number', $address['invoice_house_number'] ?? '') }}"
                                 class="form-input">
                         </div>
                         <div class="form-group">
                             <label class="form-label">Nr lokalu <span class="muted">(opcjonalnie)</span></label>
                             <input type="text" name="invoice_apartment_number"
-                                value="{{ old('invoice_apartment_number') }}" class="form-input">
+                                value="{{ old('invoice_apartment_number', $address['invoice_apartment_number'] ?? '') }}" class="form-input">
                         </div>
                     </div>
 
                     <div class="form-grid-2">
                         <div class="form-group">
                             <label class="form-label">Kod pocztowy</label>
-                            <input type="text" name="invoice_postal_code" value="{{ old('invoice_postal_code') }}"
+                            <input type="text" name="invoice_postal_code" value="{{ old('invoice_postal_code', $address['invoice_postal_code'] ?? '') }}"
                                 class="form-input">
                         </div>
                         <div class="form-group">
                             <label class="form-label">Miasto</label>
-                            <input type="text" name="invoice_city" value="{{ old('invoice_city') }}"
+                            <input type="text" name="invoice_city" value="{{ old('invoice_city', $address['invoice_city'] ?? '') }}"
                                 class="form-input">
                         </div>
                     </div>
@@ -162,7 +162,8 @@
     <script>
         function fillAddress(btn) {
             const fields = ['name', 'surname', 'phone', 'street', 'house_number', 'apartment_number', 'postal_code',
-            'city'];
+                'city'
+            ];
             fields.forEach(f => {
                 const input = document.querySelector(`[name="${f}"]`);
                 if (input) input.value = btn.dataset[f];

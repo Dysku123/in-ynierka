@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use App\Models\CartItem;
 use App\Services\CartService;
 
 class CartController extends Controller
@@ -38,7 +37,7 @@ class CartController extends Controller
         return back()->with('success', 'Produkt dodany do koszyka! 🛒');
     }
     public function index(Request $request, CartService $cartService)
-    { // do wyswietlania calego koszyka
+    { // wyświetlanie całego koszyka
 
         $userId = $request->user()?->id;
         $sessionId = session()->getId();
@@ -77,7 +76,7 @@ class CartController extends Controller
             return back()->with(['error' => 'Twój koszyk jest pusty.']);
         }
         $subtotal = $cartService->calculateTotal($cartItems);
-        //zmieniamy, zeby wszycstko czytalo
+        // ujednolicamy wpisany kod (bez spacji, wielkie litery), żeby " ser10" też pasowało do SER10
         $input = strtoupper(trim($request->input('code')));
         $code = \App\Models\DiscountCode::where('code', $input)->first();
         if (!$code) {

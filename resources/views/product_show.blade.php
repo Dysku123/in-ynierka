@@ -53,7 +53,11 @@
                     </div>
                 </div>
 
-                <button type="submit" class="btn btn--yellow btn--lg btn--block">Dodaj do koszyka 🛒</button>
+                @if ($product->inStock())
+                    <button type="submit" class="btn btn--yellow btn--lg btn--block">Dodaj do koszyka 🛒</button>
+                @else
+                    <button type="button" class="btn btn--light btn--lg btn--block" disabled>Brak w magazynie</button>
+                @endif
             </form>
         </div>
     </div>

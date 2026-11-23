@@ -1,59 +1,146 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# Gouda & Spółka 🧀: sklep internetowy z serami
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+Projekt inżynierski: sklep internetowy z serami sprzedawanymi na wagę (porcje po 100 g), zbudowany w Laravel 12.
+Sklep jest **demonstracyjny**: zamówienia nie są realizowane, a płatności online działają w trybie testowym Stripe.
 
-## About Laravel
+## Funkcje
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+**Klient**
+- katalog z filtrami (kategoria, cena od/do, wyszukiwanie), sortowaniem i paginacją,
+- koszyk dla gości i zalogowanych; koszyk gościa przechodzi na konto po zalogowaniu,
+- kody rabatowe (procentowe i kwotowe, z progiem, limitem użyć i datą ważności),
+- trzyetapowa kasa: adres (opcjonalnie dane do faktury na firmę) → dostawa i płatność → podsumowanie,
+- dostawa: kurier, paczkomat InPost (lista punktów), odbiór osobisty; płatność: online (Stripe), przelew, za pobraniem,
+- mail z potwierdzeniem zamówienia oraz podpisany link do śledzenia zamówienia (także dla gości),
+- konto: rejestracja e-mail/hasło lub logowanie przez Google, zapisane adresy, historia zamówień,
+- usunięcie konta z anonimizacją danych w zamówieniach (RODO),
+- regulamin, polityka prywatności i wymagana zgoda przed złożeniem zamówienia.
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+**Administrator**
+- pulpit ze statystykami (sprzedaż dziś, zamówienia, oczekujące, niski stan magazynowy),
+- produkty: dodawanie, edycja, zdjęcia, usuwanie (miękkie, historia zamówień zostaje),
+- zamówienia: podgląd, zmiana statusu realizacji i płatności; anulowanie zwraca towar na stan,
+- kody rabatowe: dodawanie, edycja, usuwanie.
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+## Technologie
 
-## Learning Laravel
+Laravel 12 (PHP 8.2), MySQL, Blade + Alpine.js, własny CSS budowany przez Vite, Laravel Breeze (uwierzytelnianie),
+Laravel Socialite (Google), stripe-php (Stripe Checkout + webhook), PHPUnit.
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework. You can also check out [Laravel Learn](https://laravel.com/learn), where you will be guided through building a modern Laravel application.
+## Wymagania
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+- PHP 8.2+ z rozszerzeniami `pdo_mysql`, `mbstring`, `openssl`, `fileinfo` (np. z pakietu XAMPP),
+- Composer 2,
+- MySQL 8 lub MariaDB,
+- Node.js 18+ i npm,
+- opcjonalnie: [Stripe CLI](https://docs.stripe.com/stripe-cli) (płatności online lokalnie) i projekt w Google Cloud (logowanie przez Google).
 
-## Laravel Sponsors
+## Instalacja
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+```bash
+git clone <adres-repozytorium> gouda
+cd gouda
 
-### Premium Partners
+composer install
+npm install
 
-- **[Vehikl](https://vehikl.com)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Redberry](https://redberry.international/laravel-development)**
-- **[Active Logic](https://activelogic.com)**
+cp .env.example .env          # Windows (PowerShell): copy .env.example .env
+php artisan key:generate
+```
 
-## Contributing
+W pliku `.env` ustaw dane bazy (`DB_DATABASE`, `DB_USERNAME`, `DB_PASSWORD`), adres aplikacji
+`APP_URL=http://127.0.0.1:8000` oraz adres nadawcy maili `MAIL_FROM_ADDRESS`. Utwórz pustą bazę (domyślnie
+`cheese_shop`, kodowanie `utf8mb4`), a potem:
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+```bash
+php artisan migrate --seed    # tabele + kategorie, ~40 serów, role i konto administratora
+php artisan storage:link      # publiczny dostęp do zdjęć produktów
+npm run build                 # style i skrypty
 
-## Code of Conduct
+php artisan serve             # http://127.0.0.1:8000
+```
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+Przy pracy nad stylami zamiast `npm run build` można uruchomić `npm run dev` (podgląd zmian na żywo).
 
-## Security Vulnerabilities
+### Konto administratora
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+| E-mail | Hasło |
+|---|---|
+| `admin@admin.admin` | `zaq1@WSX` |
 
-## License
+Panel jest dostępny z menu użytkownika („Panel Admina”) albo pod adresem `/admin`.
+**Przed jakimkolwiek wdrożeniem zmień to hasło** (Profil → Zmiana hasła).
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+## Płatności online (Stripe, tryb testowy)
+
+1. Załóż konto na [stripe.com](https://stripe.com) i z [kluczy testowych](https://dashboard.stripe.com/test/apikeys)
+   wpisz do `.env`: `STRIPE_KEY` (`pk_test_...`) i `STRIPE_SECRET` (`sk_test_...`).
+2. Zainstaluj Stripe CLI, zaloguj się (`stripe login`) i w osobnym terminalu uruchom:
+   ```bash
+   stripe listen --forward-to localhost:8000/stripe/webhook
+   ```
+3. Skopiuj wyświetlony klucz `whsec_...` do `STRIPE_WEBHOOK_SECRET` w `.env` i wykonaj `php artisan config:clear`.
+4. W kasie wybierz „Płatność online” i zapłać testową kartą `4242 4242 4242 4242` (dowolna przyszła data, dowolny CVC).
+
+Status „Opłacone” ustawia **webhook**: bez uruchomionego `stripe listen` zamówienie zostanie „Nieopłacone”.
+Przelew i płatność za pobraniem działają bez Stripe; status płatności zmienia wtedy administrator.
+
+## Logowanie przez Google (opcjonalnie)
+
+1. W [Google Cloud Console](https://console.cloud.google.com/apis/credentials) utwórz identyfikator klienta OAuth
+   (typ „Aplikacja internetowa”) z adresem przekierowania `http://127.0.0.1:8000/auth/google/callback`.
+2. Wpisz `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET` i `GOOGLE_REDIRECT_URI` do `.env`.
+
+Bez tej konfiguracji logowanie przez Google nie zadziała (Google pokaże błąd konfiguracji klienta); reszta sklepu,
+w tym rejestracja e-mailem, działa normalnie.
+
+## Maile
+
+Domyślnie `MAIL_MAILER=log`: maile (potwierdzenie zamówienia, reset hasła) trafiają do `storage/logs/laravel.log`.
+Do prawdziwej wysyłki ustaw serwer SMTP (`MAIL_MAILER=smtp`, `MAIL_HOST`, `MAIL_PORT`, `MAIL_USERNAME`, `MAIL_PASSWORD`).
+
+## Konfiguracja sklepu
+
+Ustawienia w `config/shop.php` (nadpisywane w `.env`):
+
+| Zmienna | Znaczenie |
+|---|---|
+| `SHOP_BANK_ACCOUNT` | numer rachunku pokazywany przy płatności przelewem |
+| `SHOP_BANK_RECIPIENT` | odbiorca przelewu |
+| `SHOP_COD_FEE` | dopłata za pobranie w groszach (domyślnie 500 = 5,00 zł) |
+
+Koszty dostawy są zdefiniowane w `app/Enums/DeliveryMethod.php`, a lista paczkomatów w `config/shop.php`.
+
+## Testy
+
+```bash
+php artisan test
+```
+
+Testy działają na osobnej bazie SQLite w pamięci (ustawienia w `phpunit.xml`), więc nie zmieniają danych w MySQL.
+
+## Struktura projektu
+
+| Katalog | Zawartość |
+|---|---|
+| `app/Http/Controllers` | kontrolery sklepu, koszyka, kasy i konta; `Admin/`: panel administratora |
+| `app/Services` | logika biznesowa: `CartService`, `OrderService`, `PaymentService`, `CatalogService` |
+| `app/Enums` | statusy zamówienia i płatności, metody dostawy i płatności |
+| `app/Models` | modele Eloquent (`Product`, `Order`, `CartItem`, `DiscountCode`…) |
+| `app/Listeners`, `app/Mail` | scalanie koszyka po zalogowaniu, mail z potwierdzeniem zamówienia |
+| `resources/views` | widoki Blade; `admin/`: panel, `checkout/`: kasa, `pages/`: regulamin i polityka prywatności |
+| `routes/web.php` | wszystkie trasy aplikacji |
+
+## Przed wdrożeniem na serwer
+
+- `APP_ENV=production` i **`APP_DEBUG=false`** (inaczej błędy pokazują kod i konfigurację),
+- własne hasło administratora i prawdziwy `MAIL_FROM_ADDRESS`,
+- HTTPS oraz webhook skonfigurowany w panelu Stripe zamiast `stripe listen`,
+- prawdziwy serwer pocztowy; przy `QUEUE_CONNECTION=database` stały proces `php artisan queue:work`,
+- `composer install --no-dev --optimize-autoloader`, `npm run build`, `php artisan optimize`.
+
+## Ograniczenia (świadome uproszczenia)
+
+- lista paczkomatów jest stała (bez mapy InPost, która wymaga konta firmowego),
+- zwroty i reklamacje nie są obsługiwane w aplikacji; zwrot płatności online wykonuje się w panelu Stripe,
+- faktury nie są generowane, sklep zapisuje jedynie dane do faktury.

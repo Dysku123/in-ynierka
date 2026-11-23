@@ -21,6 +21,7 @@
         <div class="auth-card">
             {{ $slot }}
         </div>
+        @include('layouts.footer')
     </div>
 </body>
 

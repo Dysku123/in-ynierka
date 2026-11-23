@@ -33,27 +33,24 @@ class CartService
                 'session_id' => $userId ? null : $sessionId,
                 'quantity' => $quantity,
             ]));
-        } catch (\Illuminate\Database\UniqueConstraintViolationException $e) {
+        } catch (\Illuminate\Database\UniqueConstraintViolationException) {
             CartItem::where($conditions)->first()->increment('quantity', $quantity);
         }
     }
 
     public function getCartItems(?int $userId, string $sessionId): Collection
     {
+        // usuń pozycje, których produkt zniknął z oferty (admin go usunął)
+        $this->getCartQuery($userId, $sessionId)
+            ->whereDoesntHave('product')
+            ->delete();
+
         return $this->getCartQuery($userId, $sessionId)->with('product')->get();
     }
 
     public function calculateTotal(Collection $cartItems): int
     {
-        $total = 0;
-        foreach ($cartItems as $item) {
-            if (!$item->product) {
-                continue; //sprawdzamy, czy w ogóle jest
-            }
-            $lineTotal = (int) round($item->quantity * $item->portion_weight * $item->product->price / 100);
-            $total += $lineTotal;
-        }
-        return $total;
+        return $cartItems->sum(fn($item) => $item->lineTotal());
     }
 
     public function removeFromCart(int $cartItemId, ?int $userId, string $sessionId): void
@@ -94,7 +91,7 @@ class CartService
         return $query->where('session_id', $sessionId);
     }
 
-    public function GetProductQuantity(?int $userId, string $sessionId, int $productId): int
+    public function getProductQuantity(?int $userId, string $sessionId, int $productId): int
     {
         return (int) $this->getCartQuery($userId, $sessionId)
             ->where('product_id', $productId)

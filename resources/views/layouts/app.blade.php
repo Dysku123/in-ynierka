@@ -21,8 +21,12 @@
         @include('layouts.navigation')
 
         <main class="container">
+            @if (request()->routeIs('admin.*'))
+                @include('admin._nav')
+            @endif
             @yield('content')
         </main>
+        @include('layouts.footer')
     </div>
 </body>
 

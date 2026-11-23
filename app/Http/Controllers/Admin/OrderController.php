@@ -15,13 +15,17 @@ class OrderController extends Controller
     public function updateStatus(Request $request, Order $order, OrderService $orderService)
     {
         $validated = $request->validate([
-            'status' => ['required', \Illuminate\Validation\Rule::enum(OrderStatus::class)], // spprawdzamy czy nasz status jest zdefinowany w naszej liscie enumów
-            'payment_status'=>['required', \Illuminate\Validation\Rule::enum(PaymentStatus::class)],
+            'status' => ['required', \Illuminate\Validation\Rule::enum(OrderStatus::class)], // sprawdzamy, czy status istnieje w naszym enumie
+            'payment_status' => ['required', \Illuminate\Validation\Rule::enum(PaymentStatus::class)],
         ]);
         $status = OrderStatus::from($validated['status']);
 
-        $orderService->changeStatus($order, $status);
-        $order->update(['payment_status' =>$validated['payment_status']]);
+        try {
+            $orderService->changeStatus($order, $status);
+        } catch (\DomainException $e) {
+            return back()->withErrors(['status' => $e->getMessage()]);
+        }
+        $order->update(['payment_status' => $validated['payment_status']]);
 
         return redirect()->back()->with('success', 'Status zamówienia został zaktualizowany!');
     }
@@ -37,5 +41,4 @@ class OrderController extends Controller
         $orders = Order::with('user')->latest()->paginate(20);
         return view('admin.orders.index', compact('orders'));
     }
-
 }

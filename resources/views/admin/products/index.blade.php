@@ -3,6 +3,9 @@
 @section('content')
     <div class="card">
         <h2 class="section-title">Zarządzanie asortymentem</h2>
+        @if (session('success'))
+            <div class="alert alert--success">{{ session('success') }}</div>
+        @endif
         <a href="{{ route('admin.products.create') }}" class="btn btn--green mb-4">Dodaj produkt</a>
 
         <table class="table table--bordered">

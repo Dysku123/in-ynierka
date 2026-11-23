@@ -8,7 +8,7 @@ enum OrderStatus: string {
     case Delivered = 'delivered';
     case Cancelled = 'cancelled';
 
-    public function label(): string// polska nakładka na statusy
+    public function label(): string // polska nazwa statusu do wyświetlania
     {
         return match($this) {
             self::New => 'Nowe',

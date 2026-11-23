@@ -15,6 +15,12 @@ return [
     'regex' => 'Format pola :attribute jest nieprawidłowy.',
     'current_password' => 'Hasło jest nieprawidłowe.',
     'lowercase' => 'Pole :attribute musi być zapisane małymi literami.',
+    'required_if' => 'Pole :attribute jest wymagane.',
+    'in' => 'Wybrana wartość pola :attribute jest nieprawidłowa.',
+    'enum' => 'Wybrana wartość pola :attribute jest nieprawidłowa.',
+    'date' => 'Pole :attribute musi być prawidłową datą.',
+    'uploaded' => 'Nie udało się przesłać pliku :attribute.',
+
 
     'min' => [
         'numeric' => 'Pole :attribute musi wynosić co najmniej :min.',
@@ -30,7 +36,17 @@ return [
         'postal_code' => [
             'regex' => 'Kod pocztowy musi mieć format 00-000.',
         ],
+        'invoice_postal_code' => [
+            'regex' => 'Kod pocztowy firmy musi mieć format 00-000.',
+        ],
+        'invoice_nip' => [
+            'regex' => 'NIP musi mieć dokładnie 10 cyfr (bez kresek i spacji).',
+        ],
+        'phone' => [
+            'regex' => 'Telefon musi mieć 9 cyfr (bez spacji i +48).',
+        ],
     ],
+
     'attributes' => [
         'email' => 'adres e-mail',
         'name' => 'imię',
@@ -52,5 +68,29 @@ return [
         'unit' => 'jednostka',
         'description' => 'opis',
         'image' => 'zdjęcie',
+        'invoice_company' => 'nazwa firmy',
+        'invoice_nip' => 'NIP',
+        'invoice_street' => 'ulica (firma)',
+        'invoice_house_number' => 'nr budynku (firma)',
+        'invoice_apartment_number' => 'nr lokalu (firma)',
+        'invoice_postal_code' => 'kod pocztowy (firma)',
+        'invoice_city' => 'miasto (firma)',
+        'wants_invoice' => 'faktura',
+        'delivery_method' => 'metoda dostawy',
+        'payment_method' => 'metoda płatności',
+        'paczkomat_point' => 'paczkomat',
+        'code' => 'kod rabatowy',
+        'type' => 'typ rabatu',
+        'value' => 'wartość rabatu',
+        'min_cart_value' => 'minimalna wartość koszyka',
+        'max_uses' => 'limit użyć',
+        'expires_at' => 'data ważności',
+        'status' => 'status realizacji',
+        'payment_status' => 'status płatności',
+        'portion_weight' => 'waga porcji',
+        'product_id' => 'produkt',
+        'current_password' => 'obecne hasło',
+        'confirm_email' => 'adres e-mail',
+
     ],
 ];

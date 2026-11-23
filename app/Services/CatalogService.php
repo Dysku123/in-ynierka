@@ -20,11 +20,6 @@ class CatalogService
         ];
     }
 
-    public function getCategoryWithProducts(string $slug){
-        $category = Category::with('products')->where('slug', $slug)->firstOrFail(); //jezeli nie ma, 404, z relacji ciągniemy wszystko razem
-        return $category;
-    }
-
     public function getProductBySlug(string $slug){
         $product = Product::with('category')->where('slug', $slug)->firstOrFail();
         return $product;

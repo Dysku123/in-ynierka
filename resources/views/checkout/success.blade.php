@@ -21,9 +21,12 @@
             <p>Zamówienie <strong>#{{ $order->id }}</strong> zostało przyjęte do realizacji.</p>
             <p class="mt-2">💵 Zapłacisz <strong>przy odbiorze</strong>:
                 {{ number_format($order->total_price / 100, 2, ',', ' ') }} zł (w tym dopłata za pobranie).</p>
-        @else
+        @elseif ($order->payment_status === \App\Enums\PaymentStatus::Paid)
             <h1 class="section-title">Dziękujemy za płatność! 🧀</h1>
-            <p>Zamówienie <strong>#{{ $order->id }}</strong> zostało przyjęte do realizacji.</p>
+            <p>Zamówienie <strong>#{{ $order->id }}</strong> zostało opłacone i przyjęte do realizacji.</p>
+        @else
+            <h1 class="section-title">Dziękujemy za zamówienie! 🧀</h1>
+            <p>Zamówienie <strong>#{{ $order->id }}</strong> zostało przyjęte. Czekamy na potwierdzenie płatności od operatora, status zmieni się automatycznie w ciągu kilku chwil.</p>
         @endif
 
         <p class="mt-2">Status realizacji: <strong>{{ $order->status->label() }}</strong></p>
@@ -33,10 +36,7 @@
                 <h3 class="form-label">Dane do faktury</h3>
                 <p><strong>{{ $order->invoice_company }}</strong></p>
                 <p>NIP: {{ $order->invoice_nip }}</p>
-                <p>{{ $order->invoice_street }} {{ $order->invoice_house_number }}@if ($order->invoice_apartment_number)
-                        /{{ $order->invoice_apartment_number }}
-                    @endif
-                </p>
+                <p>{{ $order->invoice_street }} {{ $order->invoice_house_number }}{{ $order->invoice_apartment_number ? '/' . $order->invoice_apartment_number : '' }}</p>
                 <p>{{ $order->invoice_postal_code }} {{ $order->invoice_city }}</p>
             </div>
         @endif

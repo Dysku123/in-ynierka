@@ -663,8 +663,28 @@ body.app-body {
         grid-template-columns: 1fr;
     }
 
+    /* nawigacja: zamiast chować linki, zawijamy pasek do dwóch rzędów */
+    .navbar__inner {
+        height: auto;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+        padding: 0.75rem 1rem;
+    }
+
+    .navbar__left {
+        gap: 1rem;
+        flex-wrap: wrap;
+    }
+
     .navbar__links {
-        display: none;
+        gap: 1rem;
+    }
+
+    /* szerokie tabele przewijają się w bok, zamiast rozpychać całą stronę */
+    .table {
+        display: block;
+        overflow-x: auto;
+        white-space: nowrap;
     }
 }
 

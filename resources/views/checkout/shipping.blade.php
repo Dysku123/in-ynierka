@@ -51,7 +51,7 @@
                             <span>{{ $method->label() }}</span>
                             <small class="muted" x-show="delivery === 'inpost'" x-cloak>— niedostępne dla
                                 paczkomatu</small>
-                            <small class="muted" x-show="delivery === 'courier'" x-cloak>— +5,00 zł dopłaty</small>
+                            <small class="muted" x-show="delivery === 'courier'" x-cloak>— +{{ number_format(config('shop.cod_fee') / 100, 2, ',', ' ') }} zł dopłaty</small>
                         </label>
                     @else
                         <label class="checkout-option mb-2">

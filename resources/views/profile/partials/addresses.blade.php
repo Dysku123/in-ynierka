@@ -10,7 +10,9 @@
         <div class="summary-box flex-between">
             <div>
                 <p><strong>{{ $address->name }} {{ $address->surname }}</strong></p>
-                <p class="muted">{{ $address->street }}, {{ $address->postal_code }} {{ $address->city }}</p>
+                <p class="muted">{{ $address->street }}
+                    {{ $address->house_number }}{{ $address->apartment_number ? '/' . $address->apartment_number : '' }},
+                    {{ $address->postal_code }} {{ $address->city }}</p>
                 <p class="muted">tel. {{ $address->phone }}</p>
             </div>
             <form method="POST" action="{{ route('address.destroy', $address) }}"

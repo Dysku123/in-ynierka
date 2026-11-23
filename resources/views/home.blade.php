@@ -32,14 +32,18 @@
             @foreach ($products as $product)
                 <div class="product-card">
                     <h3 class="product-card__name">{{ $product->name }}</h3>
-                    <p class="product-card__price">{{ number_format($product->price / 100, 2, ',', ' ') }} zł</p>
+                    <p class="product-card__price">{{ number_format($product->price / 100, 2, ',', ' ') }} zł / 100 g</p>
                     <a href="{{ route('product.show', $product->slug) }}" class="btn btn--dark btn--block">Szczegóły</a>
                     <form method="POST" action="{{ route('cart.add') }}">
                         @csrf
                         <input type="hidden" name="product_id" value="{{ $product->id }}">
                         <input type="hidden" name="portion_weight" value="{{ $product->min_portion }}">
                         <input type="hidden" name="quantity" value="1">
-                        <button type="submit" class="btn btn--yellow btn--block">+ Do koszyka ({{ $product->min_portion }} g)</button>
+                        @if ($product->inStock())
+                            <button type="submit" class="btn btn--yellow btn--block">+ Do koszyka ({{ $product->min_portion }} g)</button>
+                        @else
+                            <button type="button" class="btn btn--light btn--block" disabled>Brak w magazynie</button>
+                        @endif
                     </form>
                 </div>
             @endforeach

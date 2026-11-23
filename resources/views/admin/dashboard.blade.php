@@ -39,7 +39,8 @@
                         <tr>
                             <td><a href="{{ route('admin.order.show', $order) }}">#{{ $order->id }}</a></td>
                             <td>{{ $order->user?->name ?? ($order->shipping_name ?? 'Gość') }}</td>
-                            <td>{{ $order->status->label() }}<br><span class="muted" style="font-size:0.85rem;">{{ $order->payment_status->label() }}</span></td>
+                            <td>{{ $order->status->label() }}<br><span class="muted"
+                                    style="font-size:0.85rem;">{{ $order->payment_status->label() }}</span></td>
                             <td>{{ number_format($order->total_price / 100, 2, ',', ' ') }} zł</td>
                         </tr>
                     @empty
@@ -55,7 +56,7 @@
             <h2 class="subheading">Niski stan magazynowy (&lt; 200 g)</h2>
             @forelse ($lowStock as $product)
                 <div class="flex-between" style="padding:0.4rem 0; border-bottom:1px solid var(--gray-border);">
-                    <span>{{ $product->name }}</span>
+                    <a href="{{ route('admin.products.edit', $product) }}">{{ $product->name }}</a>
                     <strong>{{ $product->stock_quantity }} g</strong>
                 </div>
             @empty

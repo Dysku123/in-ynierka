@@ -44,16 +44,16 @@ class CheckoutController extends Controller
             'postal_code' => ['required', 'string', 'regex:/^\d{2}-\d{3}$/'],
             'city' => ['required', 'string', 'max:255', 'regex:/^[\p{L}\s-]+$/u'],
             'wants_invoice' => ['nullable', 'boolean'],
-            'invoice_company' => ['nullable', 'required_if:wants_invoice,1', 'string', 'max:255'],
-            'invoice_nip' => ['nullable', 'required_if:wants_invoice,1', 'regex:/^\d{10}$/'],
-            'invoice_street' => ['nullable', 'required_if:wants_invoice,1', 'string', 'max:255'],
-            'invoice_house_number' => ['nullable', 'required_if:wants_invoice,1', 'string', 'max:20'],
-            'invoice_apartment_number' => ['nullable', 'string', 'max:20'],
-            'invoice_postal_code' => ['nullable', 'required_if:wants_invoice,1', 'regex:/^\d{2}-\d{3}$/'],
-            'invoice_city' => ['nullable', 'required_if:wants_invoice,1', 'string', 'max:255', 'regex:/^[\p{L}\s-]+$/u'],
+            'invoice_company' => ['exclude_unless:wants_invoice,1', 'required', 'string', 'max:255'],
+            'invoice_nip' => ['exclude_unless:wants_invoice,1', 'required', 'regex:/^\d{10}$/'],
+            'invoice_street' => ['exclude_unless:wants_invoice,1', 'required', 'string', 'max:255'],
+            'invoice_house_number' => ['exclude_unless:wants_invoice,1', 'required', 'string', 'max:20'],
+            'invoice_apartment_number' => ['exclude_unless:wants_invoice,1', 'nullable', 'string', 'max:20'],
+            'invoice_postal_code' => ['exclude_unless:wants_invoice,1', 'required', 'regex:/^\d{2}-\d{3}$/'],
+            'invoice_city' => ['exclude_unless:wants_invoice,1', 'required', 'string', 'max:255', 'regex:/^[\p{L}\s-]+$/u'],
 
         ];
-        if (!$request->user()) { //dla goscia sprawdzamy emial
+        if (!$request->user()) { // od gościa wymagamy adresu e-mail (zalogowany ma go na koncie)
             $rules['email'] = 'required|email';
         }
         $validated = $request->validate($rules);
@@ -65,8 +65,11 @@ class CheckoutController extends Controller
         return redirect()->route('checkout.shipping');
     }
 
-    public function shipping(Request $request)
+    public function shipping(Request $request, CartService $cartService)
     {
+        if ($cartService->getCartItems($request->user()?->id, session()->getId())->isEmpty()) {
+            return redirect()->route('cart.show')->with('error', 'Twój koszyk jest pusty.');
+        }
         if (!session()->has('checkout.address')) {
             return redirect()->route('checkout.address');
         }
@@ -113,6 +116,9 @@ class CheckoutController extends Controller
         $userId = $request->user()?->id;
         $sessionId = session()->getId();
         $cartItems = $cartService->getCartItems($userId, $sessionId);
+        if ($cartItems->isEmpty()) {
+            return redirect()->route('cart.show')->with('error', 'Twój koszyk jest pusty.');
+        }
         $subtotal = $cartService->calculateTotal($cartItems);
 
         $discount = \App\Models\DiscountCode::fromSession($subtotal);
@@ -144,6 +150,10 @@ class CheckoutController extends Controller
         if (empty($checkout['address']) || empty($checkout['delivery_method']) || empty($checkout['payment_method'])) {
             return redirect()->route('checkout.address');
         }
+        $request->validate(
+            ['terms' => ['accepted']],
+            ['terms.accepted' => 'Aby złożyć zamówienie, zaakceptuj regulamin.']
+        );
         // Defense-in-depth: COD + paczkomat nie może przejść nawet gdyby ktoś ominął krok dostawy
         if ($checkout['payment_method'] === PaymentMethod::Cod->value && $checkout['delivery_method'] === DeliveryMethod::Inpost->value) {
             return redirect()->route('checkout.shipping')->withErrors([

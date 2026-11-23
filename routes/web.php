@@ -5,7 +5,7 @@ use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\OrderController;
-use App\Http\Controllers\Admin\OrderController as AdminOrderController; // wrzucamy alias, bo wywala błąd
+use App\Http\Controllers\Admin\OrderController as AdminOrderController; // alias, bo wyżej jest już OrderController sklepu (ta sama nazwa klasy)
 use App\Http\Controllers\CheckoutController;
 use App\Http\Controllers\AddressController;
 use App\Http\Controllers\WebhookController;
@@ -17,9 +17,10 @@ use App\Http\Controllers\Auth\GoogleController;
 
 
 Route::get('/', [HomeController::class, 'index'])->name('home');
+Route::view('/regulamin', 'pages.terms')->name('terms');
+Route::view('/polityka-prywatnosci', 'pages.privacy')->name('privacy');
 
-//Katalog (Kategorie i Produkty) - dostępne dla wszystkich
-Route::get('/kategoria/{slug}', [HomeController::class, 'show'])->name('category.show'); // po -> jest nazwa dla widoku
+// Katalog, koszyk, webhook — dostępne dla wszystkich (->name() nadaje trasie nazwę używaną w route('...'))
 Route::get('/produkt/{slug}', [HomeController::class, 'product'])->name('product.show');
 Route::post('/koszyk/dodaj', [CartController::class, 'add'])->name('cart.add');
 Route::get('/koszyk', [CartController::class, 'index'])->name('cart.show');
@@ -35,7 +36,7 @@ Route::get('/auth/google/callback', [GoogleController::class, 'callback'])->name
 
 
 
-//Trasy chronione dla zalogowanych (Profil)
+// Trasy tylko dla zalogowanych (profil, zamówienia, adresy)
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
@@ -43,23 +44,22 @@ Route::middleware('auth')->group(function () {
     Route::get('/zamowienia', [OrderController::class, 'index'])->name('orders.index');
     Route::delete('/profil/adresy/{address}', [AddressController::class, 'destroy'])->name('address.destroy');
 
-    // Dashboard (Breeze go tu zostawił)
-    Route::get('/dashboard', function () {
-        return view('dashboard');
-    })->name('dashboard');
+    // Breeze po potwierdzeniu hasła / weryfikacji maila kieruje na trasę 'dashboard' — u nas to strona główna
+    Route::redirect('/dashboard', '/')->name('dashboard');
 });
 
-Route::middleware('signed')->group(function () { // weryfikuj hash w url dla niezalogowanych
+Route::middleware('signed')->group(function () { // podpisany link: śledzenie zamówienia bez logowania (zmiana adresu = 403)
     Route::get('/zamowienie/status/{uuid}', [OrderController::class, 'showForGuest'])->name('order.guest_show');
 });
 
-//Panel Admina (tylko dla zalogowanych ADMINÓW)
-Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(function () { //sprawdzić dlaczego dokłądnie admin
+// Panel admina: 'auth' = zalogowany, 'admin' = alias middleware CheckAdminRole (bootstrap/app.php) — tylko rola admin
+Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(function () {
     Route::get('/', [AdminDashboardController::class, 'index'])->name('dashboard');
     Route::patch('/order/{order}/status', [AdminOrderController::class, 'updateStatus'])->name('order.updateStatus');
     Route::get('/order/{order}', [AdminOrderController::class, 'show'])->name('order.show');
     Route::get('/orders', [AdminOrderController::class, 'index'])->name('order.index');
-    Route::resource('products', \App\Http\Controllers\Admin\ProductController::class); // tutaj zaciąga mi wszystko na raz do 1, bo taki standard laravela
+    // resource = komplet tras CRUD jedną linią (index, create, store, edit, update, destroy); bez 'show', bo admin edytuje, nie ogląda
+    Route::resource('products', \App\Http\Controllers\Admin\ProductController::class)->except(['show']);
     Route::resource('discounts', \App\Http\Controllers\Admin\DiscountCodeController::class)->except(['show']);
 });
 

@@ -2,7 +2,7 @@
 
 @section('content')
     <div class="card">
-        <h2 class="section-title">Twój Koszyk 🛒</h2>
+        <h2 class="section-title">Twój koszyk 🛒</h2>
 
         @if (session('success'))
             <div class="alert alert--success">{{ session('success') }}</div>
@@ -29,6 +29,8 @@
                         <th>Produkt</th>
                         <th>Waga porcji</th>
                         <th>Ilość</th>
+                        <th>Cena</th>
+                        <th>Wartość</th>
                         <th></th>
                     </tr>
                 </thead>
@@ -38,6 +40,8 @@
                             <td><strong>{{ $item->product->name }}</strong></td>
                             <td>{{ $item->portion_weight }} g</td>
                             <td>{{ $item->quantity }} szt.</td>
+                            <td>{{ number_format($item->product->price / 100, 2, ',', ' ') }} zł / 100 g</td>
+                            <td><strong>{{ number_format($item->lineTotal() / 100, 2, ',', ' ') }} zł</strong></td>
                             <td>
                                 <form action="{{ route('cart.destroy', $item->id) }}" method="POST">
                                     @csrf

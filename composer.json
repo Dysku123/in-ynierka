@@ -8,9 +8,9 @@
     "require": {
         "php": "^8.2",
         "laravel/framework": "^12.0",
-        "laravel/socialite": "*",
+        "laravel/socialite": "^5.31",
         "laravel/tinker": "^2.10.1",
-        "stripe/stripe-php": "*"
+        "stripe/stripe-php": "^21.3.3"
     },
     "require-dev": {
         "fakerphp/faker": "^1.23",
@@ -82,9 +82,6 @@
         "allow-plugins": {
             "pestphp/pest-plugin": true,
             "php-http/discovery": true
-        },
-        "audit": {
-            "block-insecure": false
         }
     },
     "minimum-stability": "stable",

@@ -22,8 +22,8 @@
                 <option value="{{ $cat->slug }}" @selected(request('category') === $cat->slug)>{{ $cat->name }}</option>
             @endforeach
         </select>
-        <input type="number" name="min_price" value="{{ request('min_price') }}" placeholder="Cena od (zł)" class="form-input" min="0">
-        <input type="number" name="max_price" value="{{ request('max_price') }}" placeholder="Cena do (zł)" class="form-input" min="0">
+        <input type="number" name="min_price" value="{{ request('min_price') }}" placeholder="Cena od (zł)" class="form-input" min="0" step="0.01">
+        <input type="number" name="max_price" value="{{ request('max_price') }}" placeholder="Cena do (zł)" class="form-input" min="0" step="0.01">
         <select name="sort" class="form-select">
             <option value="">Najnowsze</option>
             <option value="price_asc" @selected(request('sort') === 'price_asc')>Cena rosnąco</option>
@@ -49,7 +49,11 @@
                         <input type="hidden" name="product_id" value="{{ $product->id }}">
                         <input type="hidden" name="portion_weight" value="{{ $product->min_portion }}">
                         <input type="hidden" name="quantity" value="1">
-                        <button type="submit" class="btn btn--yellow btn--block">+ Do koszyka ({{ $product->min_portion }} g)</button>
+                        @if ($product->inStock())
+                            <button type="submit" class="btn btn--yellow btn--block">+ Do koszyka ({{ $product->min_portion }} g)</button>
+                        @else
+                            <button type="button" class="btn btn--light btn--block" disabled>Brak w magazynie</button>
+                        @endif
                     </form>
                 </div>
             @endforeach

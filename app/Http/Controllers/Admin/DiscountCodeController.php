@@ -64,7 +64,7 @@ class DiscountCodeController extends Controller
         $validated['code'] = strtoupper(trim($validated['code']));
         $validated['is_active'] = $request->boolean('is_active');
         if (!empty($validated['expires_at'])) {
-            $validated['expires_at'] = \Carbon\Carbon::parse($validated['expires_at'])->endOfDay();// robi, ze kod jest do konca dnia, nie do 00:00 poczatku dnia
+            $validated['expires_at'] = \Carbon\Carbon::parse($validated['expires_at'])->endOfDay(); // kod ważny do końca wybranego dnia, a nie do północy na jego początku
         }
 
         return $validated;

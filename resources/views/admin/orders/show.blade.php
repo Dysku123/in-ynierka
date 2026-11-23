@@ -3,7 +3,12 @@
 @section('content')
     <div class="card">
         <h2 class="section-title">Zamówienie #{{ $order->id }} — zarządzanie statusem</h2>
-
+        @if (session('success'))
+            <div class="alert alert--success">{{ session('success') }}</div>
+        @endif
+        @if ($errors->any())
+            <div class="alert alert--error">{{ $errors->first() }}</div>
+        @endif
         <table class="table table--bordered">
             <thead>
                 <tr>
@@ -16,10 +21,10 @@
             <tbody>
                 @foreach ($order->items as $item)
                     <tr>
-                        <td>{{ $item->product?->name ?? $item->name }}</td>
+                        <td>{{ $item->name }}</td>
                         <td>{{ $item->portion_weight }} g</td>
                         <td>{{ $item->quantity }} szt.</td>
-                        <td>{{ number_format($item->price / 100, 2, ',', ' ') }} zł</td>
+                        <td>{{ number_format($item->price / 100, 2, ',', ' ') }} zł / 100 g</td>
                     </tr>
                 @endforeach
             </tbody>
@@ -29,10 +34,7 @@
             <div class="summary-box mt-4">
                 <h3 class="form-label">Dane dostawy</h3>
                 <p>{{ $order->shipping_name }} {{ $order->shipping_surname }}</p>
-                <p>{{ $order->shipping_street }} {{ $order->shipping_house_number }}@if ($order->shipping_apartment_number)
-                        /{{ $order->shipping_apartment_number }}
-                    @endif
-                </p>
+                <p>{{ $order->shipping_street }} {{ $order->shipping_house_number }}{{ $order->shipping_apartment_number ? '/' . $order->shipping_apartment_number : '' }}</p>
                 <p>{{ $order->shipping_postal_code }} {{ $order->shipping_city }}</p>
                 <p>tel. {{ $order->shipping_phone }}</p>
                 <p class="mt-2">Dostawa: {{ $order->delivery_method?->label() ?? '—' }}</p>
@@ -47,10 +49,7 @@
                 <h3 class="form-label">Dane do faktury</h3>
                 <p><strong>{{ $order->invoice_company }}</strong></p>
                 <p>NIP: {{ $order->invoice_nip }}</p>
-                <p>{{ $order->invoice_street }} {{ $order->invoice_house_number }}@if ($order->invoice_apartment_number)
-                        /{{ $order->invoice_apartment_number }}
-                    @endif
-                </p>
+                <p>{{ $order->invoice_street }} {{ $order->invoice_house_number }}{{ $order->invoice_apartment_number ? '/' . $order->invoice_apartment_number : '' }}</p>
                 <p>{{ $order->invoice_postal_code }} {{ $order->invoice_city }}</p>
             </div>
         @endif

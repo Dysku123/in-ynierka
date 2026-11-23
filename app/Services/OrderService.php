@@ -89,9 +89,27 @@ class OrderService
 
     public function changeStatus(Order $order, OrderStatus $newStatus): Order
     {
-        $order->status = $newStatus;
-        $order->save();
-        return $order;
+        return DB::transaction(function () use ($order, $newStatus) {
+            // blokujemy wiersz zamówienia: dwa kliknięcia naraz nie zwrócą towaru dwa razy
+            $order = Order::whereKey($order->id)->lockForUpdate()->firstOrFail();
+
+            if ($order->status === OrderStatus::Cancelled && $newStatus !== OrderStatus::Cancelled) {
+                throw new \DomainException('Anulowanego zamówienia nie można przywrócić.');
+            }
+
+            if ($newStatus === OrderStatus::Cancelled && $order->status !== OrderStatus::Cancelled) {
+                foreach ($order->items as $item) {
+                    Product::withTrashed()
+                        ->whereKey($item->product_id)
+                        ->increment('stock_quantity', $item->portion_weight * $item->quantity);
+                }
+            }
+
+            $order->status = $newStatus;
+            $order->save();
+
+            return $order;
+        });
     }
 
     public function getOrderByUuid(string $uuid)
@@ -118,7 +136,7 @@ class OrderService
             'invoice_apartment_number' => null,
             'invoice_postal_code' => null,
             'invoice_city' => null,
-            'email' => 'anonim@usuniete.local',
+            'email' => Order::ANONYMIZED_EMAIL,
         ]);
     }
 }

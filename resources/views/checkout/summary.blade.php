@@ -12,9 +12,8 @@
             <div class="summary-box">
                 <h2 class="form-label">Dane dostawy</h2>
                 <p>{{ $address['name'] }} {{ $address['surname'] }}</p>
-                <p>{{ $address['street'] }} {{ $address['house_number'] }}@if (!empty($address['apartment_number']))
-                        /{{ $address['apartment_number'] }}
-                    @endif
+                <p>{{ $address['street'] }}
+                    {{ $address['house_number'] }}{{ !empty($address['apartment_number']) ? '/' . $address['apartment_number'] : '' }}
                 </p>
                 <p>{{ $address['postal_code'] }} {{ $address['city'] }}</p>
                 <p>tel. {{ $address['phone'] }}</p>
@@ -38,9 +37,8 @@
                 <h2 class="form-label">Dane do faktury</h2>
                 <p><strong>{{ $address['invoice_company'] }}</strong></p>
                 <p>NIP: {{ $address['invoice_nip'] }}</p>
-                <p>{{ $address['invoice_street'] }} {{ $address['invoice_house_number'] }}@if (!empty($address['invoice_apartment_number']))
-                        /{{ $address['invoice_apartment_number'] }}
-                    @endif
+                <p>{{ $address['invoice_street'] }}
+                    {{ $address['invoice_house_number'] }}{{ !empty($address['invoice_apartment_number']) ? '/' . $address['invoice_apartment_number'] : '' }}
                 </p>
                 <p>{{ $address['invoice_postal_code'] }} {{ $address['invoice_city'] }}</p>
             </div>
@@ -55,6 +53,7 @@
                         <th>Produkt</th>
                         <th>Porcja</th>
                         <th>Ilość</th>
+                        <th>Wartość</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -63,6 +62,7 @@
                             <td><strong>{{ $item->product->name }}</strong></td>
                             <td>{{ $item->portion_weight }} g</td>
                             <td>{{ $item->quantity }} szt.</td>
+                            <td>{{ number_format($item->lineTotal() / 100, 2, ',', ' ') }} zł</td>
                         </tr>
                     @endforeach
                 </tbody>
@@ -98,9 +98,17 @@
 
         <form method="POST" action="{{ route('checkout.place') }}">
             @csrf
+            <label class="form-check mb-4">
+                <input type="checkbox" name="terms" value="1" @checked(old('terms'))>
+                Akceptuję <a href="{{ route('terms') }}" target="_blank">regulamin sklepu</a> i potwierdzam zapoznanie się
+                z <a href="{{ route('privacy') }}" target="_blank">polityką prywatności</a>.
+            </label>
+            @error('terms')
+                <div class="alert alert--error">{{ $message }}</div>
+            @enderror
             <div class="flex-between">
                 <a href="{{ route('checkout.shipping') }}" class="muted">← Wstecz</a>
-                <button type="submit" class="btn btn--green btn--lg">Zamawiam i płacę 🧀</button>
+                <button type="submit" class="btn btn--green btn--lg">Zamawiam z obowiązkiem zapłaty 🧀</button>
             </div>
         </form>
     </div>

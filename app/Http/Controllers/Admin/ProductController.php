@@ -36,8 +36,8 @@ class ProductController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'name' => 'required|string',
-            'slug' => 'required|string|unique:products,slug',
+            'name' => 'required|string|max:255',
+            'slug' => 'required|string|max:255|unique:products,slug',
             'description' => 'string|nullable',
             'unit' => 'string|nullable',
             'price' => 'required|integer|min:0',
@@ -46,7 +46,10 @@ class ProductController extends Controller
             'category_id' => 'exists:categories,id|required',
             'image' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:2048',
             'min_portion' => 'required|integer|min:1'
+        ], [], [
+            'name' => 'nazwa produktu',
         ]);
+
         $imagePath = null;
         if ($request->hasFile('image')) {
             $imagePath = $request->file('image')->store('products', 'public');
@@ -54,14 +57,6 @@ class ProductController extends Controller
         $validated['image_path'] = $imagePath;
         Product::create($validated);
         return redirect()->route('admin.products.index')->with('success', 'Produkt dodany pomyślnie!');
-    }
-
-    /**
-     * Display the specified resource.
-     */
-    public function show(string $id)
-    {
-        //
     }
 
     /**
@@ -81,10 +76,11 @@ class ProductController extends Controller
     {
         $product = Product::findOrFail($id);
         $validated = $request->validate([
-            'name' => 'required|string',
+            'name' => 'required|string|max:255',
             'slug' => [
                 'required',
                 'string',
+                'max:255',
                 Rule::unique('products', 'slug')->ignore($product->id)
             ],
             'description' => 'string|nullable',
@@ -95,7 +91,10 @@ class ProductController extends Controller
             'category_id' => 'exists:categories,id|required',
             'image' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:2048',
             'min_portion' => 'required|integer|min:1'
+        ], [], [
+            'name' => 'nazwa produktu',
         ]);
+
         if ($request->hasFile('image')) {
             if ($product->image_path) {
                 Storage::disk('public')->delete($product->image_path);
@@ -113,9 +112,6 @@ class ProductController extends Controller
     public function destroy(string $id)
     {
         $product = Product::findOrFail($id);
-        if ($product->image_path) {
-            Storage::disk('public')->delete($product->image_path);
-        }
         $product->delete();
         return redirect()->route('admin.products.index')->with('success', 'Produkt usunięty pomyślnie!');
     }
