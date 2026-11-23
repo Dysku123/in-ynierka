@@ -9,7 +9,7 @@ Sklep jest **demonstracyjny**: zamówienia nie są realizowane, a płatności on
 - katalog z filtrami (kategoria, cena od/do, wyszukiwanie), sortowaniem i paginacją,
 - koszyk dla gości i zalogowanych; koszyk gościa przechodzi na konto po zalogowaniu,
 - kody rabatowe (procentowe i kwotowe, z progiem, limitem użyć i datą ważności),
-- trzyetapowa kasa: adres (opcjonalnie dane do faktury na firmę) → dostawa i płatność → podsumowanie,
+- trzyetapowa kasa: adres (opcjonalnie dane do faktury na firmę), dostawa i płatność, podsumowanie,
 - dostawa: kurier, paczkomat InPost (lista punktów), odbiór osobisty; płatność: online (Stripe), przelew, za pobraniem,
 - mail z potwierdzeniem zamówienia oraz podpisany link do śledzenia zamówienia (także dla gości),
 - konto: rejestracja e-mail/hasło lub logowanie przez Google, zapisane adresy, historia zamówień,
@@ -68,8 +68,8 @@ Przy pracy nad stylami zamiast `npm run build` można uruchomić `npm run dev` (
 |---|---|
 | `admin@admin.admin` | `zaq1@WSX` |
 
-Panel jest dostępny z menu użytkownika („Panel Admina”) albo pod adresem `/admin`.
-**Przed jakimkolwiek wdrożeniem zmień to hasło** (Profil → Zmiana hasła).
+Panel jest dostępny z menu użytkownika ("Panel Admina") albo pod adresem `/admin`.
+**Przed jakimkolwiek wdrożeniem zmień to hasło** (Profil > Zmiana hasła).
 
 ## Płatności online (Stripe, tryb testowy)
 
@@ -80,15 +80,15 @@ Panel jest dostępny z menu użytkownika („Panel Admina”) albo pod adresem `
    stripe listen --forward-to localhost:8000/stripe/webhook
    ```
 3. Skopiuj wyświetlony klucz `whsec_...` do `STRIPE_WEBHOOK_SECRET` w `.env` i wykonaj `php artisan config:clear`.
-4. W kasie wybierz „Płatność online” i zapłać testową kartą `4242 4242 4242 4242` (dowolna przyszła data, dowolny CVC).
+4. W kasie wybierz "Płatność online" i zapłać testową kartą `4242 4242 4242 4242` (dowolna przyszła data, dowolny CVC).
 
-Status „Opłacone” ustawia **webhook**: bez uruchomionego `stripe listen` zamówienie zostanie „Nieopłacone”.
+Status "Opłacone" ustawia **webhook**: bez uruchomionego `stripe listen` zamówienie zostanie "Nieopłacone".
 Przelew i płatność za pobraniem działają bez Stripe; status płatności zmienia wtedy administrator.
 
 ## Logowanie przez Google (opcjonalnie)
 
 1. W [Google Cloud Console](https://console.cloud.google.com/apis/credentials) utwórz identyfikator klienta OAuth
-   (typ „Aplikacja internetowa”) z adresem przekierowania `http://127.0.0.1:8000/auth/google/callback`.
+   (typ "Aplikacja internetowa") z adresem przekierowania `http://127.0.0.1:8000/auth/google/callback`.
 2. Wpisz `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET` i `GOOGLE_REDIRECT_URI` do `.env`.
 
 Bez tej konfiguracji logowanie przez Google nie zadziała (Google pokaże błąd konfiguracji klienta); reszta sklepu,
@@ -126,7 +126,7 @@ Testy działają na osobnej bazie SQLite w pamięci (ustawienia w `phpunit.xml`)
 | `app/Http/Controllers` | kontrolery sklepu, koszyka, kasy i konta; `Admin/`: panel administratora |
 | `app/Services` | logika biznesowa: `CartService`, `OrderService`, `PaymentService`, `CatalogService` |
 | `app/Enums` | statusy zamówienia i płatności, metody dostawy i płatności |
-| `app/Models` | modele Eloquent (`Product`, `Order`, `CartItem`, `DiscountCode`…) |
+| `app/Models` | modele Eloquent (`Product`, `Order`, `CartItem`, `DiscountCode` itd.) |
 | `app/Listeners`, `app/Mail` | scalanie koszyka po zalogowaniu, mail z potwierdzeniem zamówienia |
 | `resources/views` | widoki Blade; `admin/`: panel, `checkout/`: kasa, `pages/`: regulamin i polityka prywatności |
 | `routes/web.php` | wszystkie trasy aplikacji |

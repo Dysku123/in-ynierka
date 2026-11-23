@@ -20,7 +20,7 @@ Route::get('/', [HomeController::class, 'index'])->name('home');
 Route::view('/regulamin', 'pages.terms')->name('terms');
 Route::view('/polityka-prywatnosci', 'pages.privacy')->name('privacy');
 
-// Katalog, koszyk, webhook — dostępne dla wszystkich (->name() nadaje trasie nazwę używaną w route('...'))
+// Katalog, koszyk, webhook: dostępne dla wszystkich (->name() nadaje trasie nazwę używaną w route('...'))
 Route::get('/produkt/{slug}', [HomeController::class, 'product'])->name('product.show');
 Route::post('/koszyk/dodaj', [CartController::class, 'add'])->name('cart.add');
 Route::get('/koszyk', [CartController::class, 'index'])->name('cart.show');
@@ -44,7 +44,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/zamowienia', [OrderController::class, 'index'])->name('orders.index');
     Route::delete('/profil/adresy/{address}', [AddressController::class, 'destroy'])->name('address.destroy');
 
-    // Breeze po potwierdzeniu hasła / weryfikacji maila kieruje na trasę 'dashboard' — u nas to strona główna
+    // Breeze po potwierdzeniu hasła / weryfikacji maila kieruje na trasę 'dashboard', a u nas to strona główna
     Route::redirect('/dashboard', '/')->name('dashboard');
 });
 
@@ -52,7 +52,7 @@ Route::middleware('signed')->group(function () { // podpisany link: śledzenie z
     Route::get('/zamowienie/status/{uuid}', [OrderController::class, 'showForGuest'])->name('order.guest_show');
 });
 
-// Panel admina: 'auth' = zalogowany, 'admin' = alias middleware CheckAdminRole (bootstrap/app.php) — tylko rola admin
+// Panel admina: 'auth' = zalogowany, 'admin' = alias middleware CheckAdminRole (bootstrap/app.php), czyli tylko rola admin
 Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(function () {
     Route::get('/', [AdminDashboardController::class, 'index'])->name('dashboard');
     Route::patch('/order/{order}/status', [AdminOrderController::class, 'updateStatus'])->name('order.updateStatus');

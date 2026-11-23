@@ -27,7 +27,7 @@ class CartController extends Controller
         $totalGrams = ($alreadyInCart + $quantity) * $product->min_portion;
         if ($totalGrams > $product->stock_quantity) {
             return back()->withErrors([
-                'stock' => 'Niestety, nie mamy tyle na stanie. Dostępne: ' . $product->stock_quantity . ' g „' . $product->name . '".',
+                'stock' => 'Niestety, nie mamy tyle na stanie. Dostępne: ' . $product->stock_quantity . ' g "' . $product->name . '".',
             ]);
         }
         $cartService->addToCart($userId, $sessionId, $productId, $portionWeight, $quantity);

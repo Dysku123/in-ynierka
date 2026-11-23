@@ -47,7 +47,7 @@ class DiscountCodeController extends Controller
 
     /**
      * Wspólna walidacja dla store i update.
-     * $ignoreId — przy edycji pomijamy własny rekord przy sprawdzaniu unikalności kodu.
+     * $ignoreId: przy edycji pomijamy własny rekord przy sprawdzaniu unikalności kodu.
      */
     private function validateData(Request $request, ?int $ignoreId = null): array
     {

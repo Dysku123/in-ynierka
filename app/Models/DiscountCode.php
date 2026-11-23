@@ -54,7 +54,7 @@ class DiscountCode extends Model
     {
         if ($this->type === 'percent') {
             $discount = (int) round($cartTotal * $this->value / 100);
-        } else { // 'fixed' — rabat kwotowy
+        } else { // 'fixed', czyli rabat kwotowy
             $discount = $this->value;
         }
 

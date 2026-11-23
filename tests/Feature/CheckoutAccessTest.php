@@ -20,7 +20,7 @@ class CheckoutAccessTest extends TestCase
     use RefreshDatabase;
 
     // Pomocnik (nie test, bo nie zaczyna się od "test_"): tworzy zamówienie z danymi firmy.
-    // "Tajna Firma SA" to nasz znacznik — jeśli pojawi się na stronie, to dane są widoczne.
+    // "Tajna Firma SA" to nasz znacznik: jeśli pojawi się na stronie, to dane są widoczne.
     // $extra pozwala nadpisać wybrane pola, np. status albo metodę płatności.
     private function makeOrder(array $extra = []): Order
     {
@@ -37,7 +37,7 @@ class CheckoutAccessTest extends TestCase
         ], $extra));
     }
 
-    // Obcy człowiek zgaduje numer zamówienia i wchodzi na zwykły adres (bez podpisu) → musi dostać 403.
+    // Obcy człowiek zgaduje numer zamówienia i wchodzi na zwykły adres (bez podpisu), więc musi dostać 403.
     public function test_success_page_without_signature_is_forbidden(): void
     {
         $order = $this->makeOrder();
@@ -47,20 +47,20 @@ class CheckoutAccessTest extends TestCase
             ->assertForbidden(); // 403
     }
 
-    // Kupujący z poprawnym podpisem → strona działa (200) i pokazuje jego dane.
+    // Kupujący z poprawnym podpisem: strona działa (200) i pokazuje jego dane.
     // Pilnuje, żeby zabezpieczenie nie zablokowało przy okazji właściciela.
     public function test_success_page_with_valid_signature_is_visible(): void
     {
         $order = $this->makeOrder();
 
-        // URL::signedRoute() buduje adres Z podpisem — tak jak robi to sklep po złożeniu zamówienia
+        // URL::signedRoute() buduje adres Z podpisem, tak jak robi to sklep po złożeniu zamówienia
         $this->get(URL::signedRoute('checkout.success', $order))
             ->assertOk()                  // 200
             ->assertSee('Tajna Firma SA'); // dane zamówienia są na stronie
     }
 
     // Atak: mam ważny link do SWOJEGO zamówienia i podmieniam w nim numer na cudzy.
-    // Podpis był policzony dla innego adresu, więc nie pasuje → 403.
+    // Podpis był policzony dla innego adresu, więc nie pasuje i jest 403.
     public function test_signature_of_one_order_does_not_open_another(): void
     {
         $mine = $this->makeOrder();
@@ -81,7 +81,7 @@ class CheckoutAccessTest extends TestCase
 
         $this->get(route('checkout.cancel', $order))->assertForbidden();    // strona anulowania bez podpisu
         $this->post(route('checkout.pay', $order))->assertForbidden();      // "zapłać ponownie" bez podpisu
-        $this->get(URL::signedRoute('checkout.cancel', $order))->assertOk(); // z podpisem — OK
+        $this->get(URL::signedRoute('checkout.cancel', $order))->assertOk(); // z podpisem działa
     }
 
     // Nawet z ważnym podpisem nie da się zapłacić za zamówienie, które admin ANULOWAŁ
@@ -96,7 +96,7 @@ class CheckoutAccessTest extends TestCase
             ->assertForbidden();
     }
 
-    // Cała ścieżka zakupu: koszyk → złożenie zamówienia → przekierowanie.
+    // Cała ścieżka zakupu: koszyk, złożenie zamówienia, przekierowanie.
     // Sprawdza, że sklep odsyła kupującego na stronę sukcesu Z PODPISEM
     // (gdyby został zwykły redirect()->route(), kupujący sam dostałby 403).
     public function test_customer_lands_on_signed_success_page_after_placing_order(): void
@@ -126,7 +126,7 @@ class CheckoutAccessTest extends TestCase
                     'city' => 'Warszawa',
                 ],
                 'delivery_method' => 'courier',
-                'payment_method' => 'transfer', // przelew — bez łączenia ze Stripe
+                'payment_method' => 'transfer', // przelew, bez łączenia ze Stripe
             ]])
             ->post(route('checkout.place'), ['terms' => '1']);
 

@@ -28,7 +28,7 @@ class ShopController extends Controller
             $query->whereHas('category', fn($q) => $q->where('slug', $request->category)); // funkcja strzałkowa: przyjmuje $q i zwraca wynik metody where
         }
 
-        // filtr ceny (zł z formularza → grosze w bazie)
+        // filtr ceny (zł z formularza zamieniamy na grosze, bo tak ceny są w bazie)
         if ($request->filled('min_price')) {
             $query->where('price', '>=', (int) round($request->min_price * 100));
         }

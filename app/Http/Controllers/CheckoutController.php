@@ -12,6 +12,7 @@ use App\Services\PaymentService;
 use App\Enums\PaymentStatus;
 use App\Enums\OrderStatus;
 use Illuminate\Support\Facades\URL;
+use Stripe\Exception\ExceptionInterface as StripeException;
 
 
 class CheckoutController extends Controller
@@ -23,7 +24,7 @@ class CheckoutController extends Controller
         if ($cartService->getCartItems($userId, $sessionId)->isEmpty()) {
             return redirect()->route('cart.show')->with('error', 'Twój koszyk jest pusty.');
         }
-        $address = session('checkout.address', []); //Pierwszy argument to klucz, drugi ([]) to wartość domyślna, gdy klucza nie ma. Po co? Gdy user cofnie się z kroku 2 do 1, chcemy pokazać to, co już wpisał, a nie pusty formularz. Jak wchodzi pierwszy raz — klucza nie ma, więc dostaje [].
+        $address = session('checkout.address', []); //Pierwszy argument to klucz, drugi ([]) to wartość domyślna, gdy klucza nie ma. Po co? Gdy user cofnie się z kroku 2 do 1, chcemy pokazać to, co już wpisał, a nie pusty formularz. Jak wchodzi pierwszy raz, klucza nie ma, więc dostaje [].
 
         $savedAddresses = $request->user()
             ? $request->user()->addresses()->latest()->get()
@@ -154,7 +155,7 @@ class CheckoutController extends Controller
             ['terms' => ['accepted']],
             ['terms.accepted' => 'Aby złożyć zamówienie, zaakceptuj regulamin.']
         );
-        // Defense-in-depth: COD + paczkomat nie może przejść nawet gdyby ktoś ominął krok dostawy
+        // Dodatkowe zabezpieczenie: pobranie + paczkomat nie przejdzie, nawet gdyby ktoś ominął krok dostawy
         if ($checkout['payment_method'] === PaymentMethod::Cod->value && $checkout['delivery_method'] === DeliveryMethod::Inpost->value) {
             return redirect()->route('checkout.shipping')->withErrors([
                 'payment_method' => 'Płatność za pobraniem nie jest dostępna dla paczkomatu InPost. Wybierz inną metodę.',
@@ -164,8 +165,8 @@ class CheckoutController extends Controller
 
         $userId = $request->user()?->id;
         $sessionId = session()->getId();
-        // #4: jeśli user miał kod rabatowy, a przestał już łapać (wygasł / wyczerpany / koszyk poniżej progu)
-        // — nie obciążaj po cichu pełną kwotą; wróć do podsumowania z informacją.
+        // Jeśli kod rabatowy przestał obowiązywać (wygasł, wyczerpał się, koszyk spadł poniżej progu),
+        // nie pobieramy po cichu pełnej kwoty, tylko wracamy do podsumowania z komunikatem.
         if (session('discount_code')) {
             $subtotal = $cartService->calculateTotal($cartService->getCartItems($userId, $sessionId));
             if (!\App\Models\DiscountCode::fromSession($subtotal)) {
@@ -209,18 +210,18 @@ class CheckoutController extends Controller
         session()->forget('checkout');
         session()->forget('discount_code');
 
-        // Zamówienie "za darmo" (np. rabat 100%) — nic do zapłaty.
+        // Zamówienie "za darmo" (np. rabat 100%), czyli nic do zapłaty.
         // Stripe odrzuciłby kwotę 0, więc oznaczamy jako opłacone i pomijamy płatność.
         if ($order->total_price <= 0) {
             $order->update(['payment_status' => PaymentStatus::Paid]);
             return redirect()->to(URL::signedRoute('checkout.success', ['order' => $order->id]));
         }
 
-        // Płatność online → do hostowanej strony Stripe
+        // Płatność online: przekierowanie na stronę płatności Stripe
         if ($checkout['payment_method'] === PaymentMethod::Online->value) {
-            return redirect()->away($paymentService->createCheckoutSession($order));
+            return $this->redirectToPayment($order, $paymentService);
         }
-        // COD / przelew tradycyjny → strona potwierdzenia z instrukcjami
+        // Pobranie / przelew tradycyjny: strona potwierdzenia z instrukcjami
         return redirect()->to(URL::signedRoute('checkout.success', ['order' => $order->id]));
     }
 
@@ -244,7 +245,21 @@ class CheckoutController extends Controller
             403
         );
 
+        return $this->redirectToPayment($order, $paymentService);
+    }
 
-        return redirect()->away($paymentService->createCheckoutSession($order));
+    // Przekierowanie do płatności Stripe. Jeśli Stripe nie odpowie (brak lub zły klucz, brak sieci,
+    // kwota poniżej minimum Stripe), zamówienie jest już zapisane, więc zamiast błędu 500
+    // pokazujemy stronę "Płatność anulowana" z komunikatem i przyciskiem "Zapłać ponownie".
+    private function redirectToPayment(Order $order, PaymentService $paymentService)
+    {
+        try {
+            return redirect()->away($paymentService->createCheckoutSession($order));
+        } catch (StripeException $e) {
+            report($e); // szczegóły błędu trafiają do storage/logs/laravel.log
+
+            return redirect()->to(URL::signedRoute('checkout.cancel', ['order' => $order->id]))
+                ->with('error', 'Nie udało się połączyć z operatorem płatności. Zamówienie zostało zapisane, spróbuj zapłacić ponownie za chwilę.');
+        }
     }
 }
